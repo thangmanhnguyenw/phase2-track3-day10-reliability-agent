@@ -1,0 +1,142 @@
+{
+  "metrics": {
+    "total_requests": 100,
+    "availability": 0.98,
+    "error_rate": 0.02,
+    "latency_p50_ms": 217.88,
+    "latency_p95_ms": 279.59,
+    "latency_p99_ms": 297.45,
+    "cache_hit_rate": 0.64,
+    "estimated_cost": 0.014808,
+    "estimated_cost_saved": 0.064,
+    "circuit_open_count": 1,
+    "fallback_success_rate": 0.8333
+  },
+  "metrics_no_cache": {
+    "total_requests": 100,
+    "availability": 0.96,
+    "error_rate": 0.04,
+    "latency_p50_ms": 226.81,
+    "latency_p95_ms": 299.92,
+    "latency_p99_ms": 338.79,
+    "cache_hit_rate": 0.0,
+    "estimated_cost": 0.044958,
+    "estimated_cost_saved": 0.0,
+    "circuit_open_count": 0,
+    "fallback_success_rate": 0.8667
+  },
+  "cache_comparison": {
+    "without_cache": {
+      "total_requests": 100,
+      "availability": 0.96,
+      "error_rate": 0.04,
+      "latency_p50_ms": 226.81,
+      "latency_p95_ms": 299.92,
+      "latency_p99_ms": 338.79,
+      "cache_hit_rate": 0.0,
+      "estimated_cost": 0.044958,
+      "estimated_cost_saved": 0.0,
+      "circuit_open_count": 0,
+      "fallback_success_rate": 0.8667
+    },
+    "with_cache": {
+      "total_requests": 100,
+      "availability": 0.98,
+      "error_rate": 0.02,
+      "latency_p50_ms": 217.88,
+      "latency_p95_ms": 279.59,
+      "latency_p99_ms": 297.45,
+      "cache_hit_rate": 0.64,
+      "estimated_cost": 0.014808,
+      "estimated_cost_saved": 0.064,
+      "circuit_open_count": 1,
+      "fallback_success_rate": 0.8333
+    },
+    "delta": {
+      "latency_p50_ms": "-8.93",
+      "latency_p95_ms": "-20.33",
+      "latency_p99_ms": "-41.34",
+      "estimated_cost": "-0.030150",
+      "cache_hit_rate": "+64.0%",
+      "availability": "+2.0%"
+    },
+    "note": "Same request sequence (seed fixed); cache OFF run first, then cache ON."
+  },
+  "summary": {
+    "route_distribution": {
+      "primary": 24,
+      "fallback": 10,
+      "static_fallback": 2,
+      "cache_hit:0.97": 3,
+      "cache_hit:1.00": 59,
+      "cache_hit:0.98": 2
+    },
+    "error_distribution": {
+      "backup simulated failure": 2
+    },
+    "region_distribution": {
+      "sa-east-1": 27,
+      "ap-northeast-1": 23,
+      "ap-southeast-1": 10,
+      "eu-west-1": 22,
+      "us-east-1": 18
+    },
+    "unique_users": 99,
+    "cache_enabled": true,
+    "per_request_random": true,
+    "seed": 42,
+    "config_path": "configs/simulation.yaml"
+  },
+  "config_snapshot": {
+    "providers": [
+      {
+        "name": "primary",
+        "fail_rate": 0.24,
+        "base_latency_ms": 178,
+        "cost_per_1k_tokens": 0.009
+      },
+      {
+        "name": "backup",
+        "fail_rate": 0.03,
+        "base_latency_ms": 221,
+        "cost_per_1k_tokens": 0.0043
+      }
+    ],
+    "circuit_breaker": {
+      "failure_threshold": 3,
+      "reset_timeout_seconds": 3.8,
+      "success_threshold": 1
+    },
+    "cache": {
+      "enabled": true,
+      "backend": "memory",
+      "ttl_seconds": 300,
+      "similarity_threshold": 0.89,
+      "redis_url": "redis://localhost:6379/0"
+    },
+    "load_test": {
+      "requests": 100
+    },
+    "scenarios": [
+      {
+        "name": "primary_timeout_100",
+        "description": "Primary provider fails 100% \u2014 all traffic should fallback",
+        "provider_overrides": {
+          "primary": 1.0
+        }
+      },
+      {
+        "name": "primary_flaky_50",
+        "description": "Primary provider fails 50% \u2014 circuit should oscillate",
+        "provider_overrides": {
+          "primary": 0.5
+        }
+      },
+      {
+        "name": "all_healthy",
+        "description": "Baseline \u2014 both providers healthy",
+        "provider_overrides": {}
+      }
+    ]
+  }
+}

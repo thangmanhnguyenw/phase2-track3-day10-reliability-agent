@@ -1,0 +1,35 @@
+# Auto-generated simulation config (seed=42)
+# Auto-generated realistic production-like parameters
+providers:
+- name: primary
+  fail_rate: 0.24
+  base_latency_ms: 178
+  cost_per_1k_tokens: 0.009
+- name: backup
+  fail_rate: 0.03
+  base_latency_ms: 221
+  cost_per_1k_tokens: 0.0043
+circuit_breaker:
+  failure_threshold: 3
+  reset_timeout_seconds: 3.8
+  success_threshold: 1
+cache:
+  enabled: true
+  backend: memory
+  ttl_seconds: 300
+  similarity_threshold: 0.89
+  redis_url: redis://localhost:6379/0
+load_test:
+  requests: 100
+scenarios:
+- name: primary_timeout_100
+  description: "Primary provider fails 100% \u2014 all traffic should fallback"
+  provider_overrides:
+    primary: 1.0
+- name: primary_flaky_50
+  description: "Primary provider fails 50% \u2014 circuit should oscillate"
+  provider_overrides:
+    primary: 0.5
+- name: all_healthy
+  description: "Baseline \u2014 both providers healthy"
+  provider_overrides: {}

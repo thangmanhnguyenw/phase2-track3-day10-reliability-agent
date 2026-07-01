@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 10 — Reliability Agent Lab — Hướng dẫn chi tiết</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface2: #243044;
+      --border: #2d3a4f;
+      --text: #e6edf3;
+      --muted: #8b9cb3;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --warn: #d29922;
+      --danger: #f85149;
+      --purple: #bc8cff;
+      --radius: 10px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --mono: "Cascadia Code", "Fira Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      display: flex;
+      min-height: 100vh;
+    }
+    nav {
+      width: 280px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem 1rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    nav h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    nav a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover, nav a.active { background: var(--surface2); color: var(--accent); }
+    main {
+      margin-left: 280px;
+      flex: 1;
+      padding: 2.5rem 3rem 4rem;
+      max-width: 960px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle { color: var(--muted); font-size: 1.05rem; margin-bottom: 2rem; }
+    section { margin-bottom: 3rem; }
+    h2 {
+      font-size: 1.45rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--accent);
+    }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--accent2); }
+    h4 { font-size: 0.95rem; margin: 1rem 0 0.5rem; color: var(--purple); }
+    p { margin-bottom: 0.85rem; }
+    ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+    li { margin-bottom: 0.35rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+    }
+    .card.warn { border-left: 4px solid var(--warn); }
+    .card.info { border-left: 4px solid var(--accent); }
+    .card.success { border-left: 4px solid var(--accent2); }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.35rem;
+    }
+    .badge-todo { background: #3d2a00; color: var(--warn); }
+    .badge-done { background: #0d2818; color: var(--accent2); }
+    .badge-skip { background: #2a1a3d; color: var(--purple); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+    }
+    th { background: var(--surface2); color: var(--accent); font-weight: 600; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    code {
+      font-family: var(--mono);
+      background: var(--surface2);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: #ff7b72;
+    }
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    pre code { background: none; padding: 0; color: var(--text); }
+    .mermaid {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .flow-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin: 0.75rem 0;
+      padding: 0.85rem 1rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .flow-num {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { margin-left: 0; padding: 1.5rem; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .state-machine {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    .state {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .state-closed { background: #0d2818; color: var(--accent2); border: 1px solid var(--accent2); }
+    .state-open { background: #3d1010; color: var(--danger); border: 1px solid var(--danger); }
+    .state-half { background: #3d2a00; color: var(--warn); border: 1px solid var(--warn); }
+    .arrow { color: var(--muted); align-self: center; }
+    .param-name { color: var(--accent); font-family: var(--mono); }
+    .file-tree {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+    .file-tree .dir { color: var(--accent); }
+    .file-tree .file { color: var(--text); }
+    .file-tree .todo { color: var(--warn); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <h2>Mục lục</h2>
+  <a href="#tong-quan">1. Tổng quan</a>
+  <a href="#cau-truc">2. Cấu trúc dự án</a>
+  <a href="#cach-chay">3. Cách chạy</a>
+  <a href="#luong-chay">4. Luồng chạy chính</a>
+  <a href="#gateway">5. Gateway Pipeline</a>
+  <a href="#circuit-breaker">6. Circuit Breaker</a>
+  <a href="#cache">7. Cache</a>
+  <a href="#providers">8. Providers</a>
+  <a href="#config">9. Tham số cấu hình</a>
+  <a href="#chaos">10. Chaos &amp; Metrics</a>
+  <a href="#redis">11. Redis Shared Cache</a>
+  <a href="#tests">12. Bộ test</a>
+  <a href="#thu-tu">13. Thứ tự implement</a>
+  <a href="#deliverables">14. Deliverables</a>
+<a href="#mo-phong">15. Mô phỏng &amp; Config</a>
+  <a href="#ket-qua">16. Kết quả 100 requests</a>
+  <a href="#cache-compare">17. So sánh Cache</a>
+  <a href="#visual">18. Dashboard trực quan</a>
+  <a href="#random-thuc-te">19. Random thực tế</a>
+</nav>
+
+<main>
+  <h1>Day 10 — Reliability Agent Lab</h1>
+  <p class="subtitle">Hướng dẫn chi tiết luồng chạy, tham số, chức năng từng module và cách chạy bài lab.</p>
+
+  <!-- 1. Tổng quan -->
+  <section id="tong-quan">
+    <h2>1. Tổng quan</h2>
+    <p>Đây là bài lab xây dựng <strong>lớp reliability (độ tin cậy)</strong> cho một LLM agent gateway theo kiểu production. Repo cung cấp kiến trúc, interface, test — bạn cần <strong>implement các TODO</strong> trong source code.</p>
+
+    <div class="card info">
+      <strong>Mục tiêu học tập:</strong>
+      <ul>
+        <li>Circuit breaker 3 trạng thái: CLOSED → OPEN → HALF_OPEN → CLOSED</li>
+        <li>Route request qua: Cache → Circuit Breaker → Provider fallback chain</li>
+        <li>Semantic cache với n-gram cosine similarity, privacy guardrails, false-hit detection</li>
+        <li>Redis shared cache cho multi-instance deployment</li>
+        <li>Chaos testing + metrics: availability, P50/P95/P99, cache hit rate, recovery time...</li>
+      </ul>
+    </div>
+
+    <p><strong>Thời gian ước tính:</strong> 4–5 giờ | <strong>Điểm tối đa:</strong> 100 điểm (theo rubric)</p>
+  </section>
+
+  <!-- 2. Cấu trúc -->
+  <section id="cau-truc">
+    <h2>2. Cấu trúc dự án</h2>
+    <pre class="file-tree"><span class="dir">src/reliability_lab/</span>
+  <span class="todo">circuit_breaker.py</span>  <span class="file"># TODO: 4 methods — state machine</span>
+  <span class="todo">cache.py</span>              <span class="file"># TODO: similarity, get/set, SharedRedisCache</span>
+  <span class="todo">gateway.py</span>            <span class="file"># TODO: complete() — routing pipeline</span>
+  <span class="todo">chaos.py</span>              <span class="file"># TODO: run_scenario(), calculate_recovery_time_ms()</span>
+  <span class="todo">metrics.py</span>            <span class="file"># TODO: write_csv()</span>
+  <span class="file">providers.py</span>          <span class="file"># FakeLLMProvider — KHÔNG cần sửa</span>
+  <span class="file">config.py</span>             <span class="file"># Pydantic config loader — KHÔNG cần sửa</span>
+
+<span class="dir">scripts/</span>
+  <span class="file">run_chaos.py</span>          <span class="file"># CLI chạy chaos simulation</span>
+  <span class="file">generate_report.py</span>    <span class="file"># Tạo báo cáo từ metrics.json</span>
+
+<span class="dir">configs/</span>
+  <span class="file">default.yaml</span>          <span class="file"># Cấu hình providers, CB, cache, chaos scenarios</span>
+
+<span class="dir">tests/</span>                  <span class="file"># 25 test FAIL cho đến khi implement xong TODO</span>
+<span class="dir">data/</span>
+  <span class="file">sample_queries.jsonl</span>  <span class="file"># 20 query mẫu (privacy, technical, faq...)</span>
+<span class="file">docker-compose.yml</span>        <span class="file"># Redis local</span>
+<span class="dir">reports/</span>
+  <span class="file">report_template.md</span>  <span class="file"># Template báo cáo cuối</span></pre>
+  </section>
+
+  <!-- 3. Cách chạy -->
+  <section id="cach-chay">
+    <h2>3. Cách chạy bài lab</h2>
+
+    <h3>3.1 Cài đặt môi trường</h3>
+    <pre><code># Cách A: conda
+conda activate ai-lab
+pip install -e ".[dev]"
+
+# Cách B: venv (Windows)
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e ".[dev]"</code></pre>
+
+    <h3>3.2 Khởi động Redis (cho shared cache)</h3>
+    <pre><code>make docker-up
+# hoặc: docker compose up -d</code></pre>
+
+    <h3>3.3 Các lệnh chính (Makefile)</h3>
+    <table>
+      <thead>
+        <tr><th>Lệnh</th><th>Chức năng</th><th>Kết quả mong đợi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>make test</code></td><td>Chạy toàn bộ pytest</td><td>Ban đầu: 25 FAIL + 7 xfail. Khi xong: 0 FAIL</td></tr>
+        <tr><td><code>make lint</code></td><td>Kiểm tra code style (ruff)</td><td>Không lỗi</td></tr>
+        <tr><td><code>make typecheck</code></td><td>Kiểm tra type hints (mypy)</td><td>Không lỗi</td></tr>
+        <tr><td><code>make run-chaos</code></td><td>Chạy chaos simulation</td><td>Tạo <code>reports/metrics.json</code></td></tr>
+        <tr><td><code>make report</code></td><td>Tạo báo cáo từ metrics</td><td>Tạo <code>reports/final_report.md</code></td></tr>
+        <tr><td><code>make docker-up</code></td><td>Start Redis container</td><td>Redis chạy port 6379</td></tr>
+        <tr><td><code>make docker-down</code></td><td>Dừng Redis</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.4 Chạy test từng module</h3>
+    <pre><code>pytest tests/test_circuit_breaker.py -v   # 11 tests
+pytest tests/test_cache.py -v             # 9 tests
+pytest tests/test_gateway_contract.py -v    # 4 tests
+pytest tests/test_redis_cache.py -v       # 6 tests (cần Redis)</code></pre>
+
+    <h3>3.5 Chạy chaos thủ công</h3>
+    <pre><code>python scripts/run_chaos.py --config configs/default.yaml --out reports/metrics.json
+python scripts/generate_report.py --metrics reports/metrics.json --out reports/final_report.md</code></pre>
+
+    <div class="card warn">
+      <strong>Lưu ý:</strong> Không cần API key thật. <code>FakeLLMProvider</code> mô phỏng latency, lỗi và chi phí cục bộ.
+    </div>
+  </section>
+
+  <!-- 4. Luồng chạy -->
+  <section id="luong-chay">
+    <h2>4. Luồng chạy chính (End-to-End)</h2>
+
+    <h3>4.1 Luồng khi chạy <code>make run-chaos</code></h3>
+    <div class="mermaid">
+flowchart TD
+    A["scripts/run_chaos.py"] --> B["load_config(configs/default.yaml)"]
+    B --> C["load_queries(data/sample_queries.jsonl)"]
+    C --> D["run_simulation(config, queries)"]
+    D --> E{"Có scenarios?"}
+    E -->|Có| F["Lặp từng scenario"]
+    E -->|Không| G["run_scenario default"]
+    F --> H["build_gateway()"]
+    H --> I["Loop load_test.requests lần"]
+    I --> J["gateway.complete(random_query)"]
+    J --> K["Thu thập RunMetrics"]
+    K --> L["Gộp metrics tất cả scenarios"]
+    L --> M["metrics.write_json(reports/metrics.json)"]
+    G --> M
+    </div>
+
+    <h3>4.2 Luồng build_gateway()</h3>
+    <div class="mermaid">
+flowchart LR
+    CFG["LabConfig"] --> P["FakeLLMProvider × N"]
+    CFG --> CB["CircuitBreaker × N"]
+    CFG --> CACHE{"cache.enabled?"}
+    CACHE -->|memory| MEM["ResponseCache"]
+    CACHE -->|redis| REDIS["SharedRedisCache"]
+    CACHE -->|false| NONE["None"]
+    P --> GW["ReliabilityGateway"]
+    CB --> GW
+    MEM --> GW
+    REDIS --> GW
+    NONE --> GW
+    </div>
+  </section>
+
+  <!-- 5. Gateway -->
+  <section id="gateway">
+    <h2>5. Gateway Pipeline — <code>ReliabilityGateway.complete()</code></h2>
+    <p>Đây là điểm vào chính của mọi request. File: <code>src/reliability_lab/gateway.py</code></p>
+
+    <div class="mermaid">
+flowchart TD
+    REQ["User prompt"] --> CACHE_CHK{"Cache enabled?"}
+    CACHE_CHK -->|Có| GET["cache.get(prompt)"]
+    GET --> HIT{"cached_text != None?"}
+    HIT -->|Có| RET_CACHE["Return GatewayResponse<br/>route=cache_hit:score<br/>latency=0, cost=0"]
+    HIT -->|Không| CHAIN
+    CACHE_CHK -->|Không| CHAIN
+
+    CHAIN["Lặp providers theo thứ tự"] --> BRK["breaker.call(provider.complete, prompt)"]
+    BRK --> OK{"Thành công?"}
+    OK -->|Có| STORE["cache.set(prompt, response)"]
+    STORE --> RET_PROV["Return GatewayResponse<br/>route=primary hoặc fallback"]
+    OK -->|ProviderError / CircuitOpenError| NEXT{"Còn provider?"}
+    NEXT -->|Có| CHAIN
+    NEXT -->|Không| STATIC["Return static_fallback<br/>text=degraded message"]
+    </div>
+
+    <h3>GatewayResponse — các trường dữ liệu</h3>
+    <table>
+      <thead><tr><th>Trường</th><th>Kiểu</th><th>Mô tả</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">text</span></td><td>str</td><td>Nội dung phản hồi</td></tr>
+        <tr><td><span class="param-name">route</span></td><td>str</td><td>Đường đi: <code>cache_hit:0.95</code>, <code>primary</code>, <code>fallback</code>, <code>static_fallback</code></td></tr>
+        <tr><td><span class="param-name">provider</span></td><td>str | None</td><td>Tên provider đã xử lý (None nếu cache/static)</td></tr>
+        <tr><td><span class="param-name">cache_hit</span></td><td>bool</td><td>True nếu trả về từ cache</td></tr>
+        <tr><td><span class="param-name">latency_ms</span></td><td>float</td><td>Độ trễ (0 nếu cache hit)</td></tr>
+        <tr><td><span class="param-name">estimated_cost</span></td><td>float</td><td>Chi phí ước tính (0 nếu cache hit)</td></tr>
+        <tr><td><span class="param-name">error</span></td><td>str | None</td><td>Lỗi cuối cùng (chỉ khi static_fallback)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. Circuit Breaker -->
+  <section id="circuit-breaker">
+    <h2>6. Circuit Breaker — State Machine</h2>
+    <p>File: <code>src/reliability_lab/circuit_breaker.py</code> — Mỗi provider có 1 circuit breaker riêng.</p>
+
+    <h3>6.1 Ba trạng thái</h3>
+    <div class="state-machine">
+      <span class="state state-closed">CLOSED</span>
+      <span class="arrow">→ (fail ≥ threshold) →</span>
+      <span class="state state-open">OPEN</span>
+      <span class="arrow">→ (timeout hết) →</span>
+      <span class="state state-half">HALF_OPEN</span>
+      <span class="arrow">→ (probe OK) →</span>
+      <span class="state state-closed">CLOSED</span>
+    </div>
+
+    <table>
+      <thead><tr><th>Trạng thái</th><th>Hành vi</th><th>Chuyển sang</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CLOSED</strong></td><td>Cho phép mọi request, đếm failure</td><td>OPEN khi failure_count ≥ failure_threshold</td></tr>
+        <tr><td><strong>OPEN</strong></td><td>Từ chối ngay (fail fast), không gọi provider</td><td>HALF_OPEN sau reset_timeout_seconds</td></tr>
+        <tr><td><strong>HALF_OPEN</strong></td><td>Cho 1 probe request thử</td><td>CLOSED nếu probe thành công; OPEN nếu probe thất bại</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.2 Các method cần implement</h3>
+
+    <h4><code>allow_request() → bool</code></h4>
+    <div class="flow-step"><span class="flow-num">1</span><div>CLOSED → luôn return <code>True</code></div></div>
+    <div class="flow-step"><span class="flow-num">2</span><div>HALF_OPEN → return <code>True</code> (probe)</div></div>
+    <div class="flow-step"><span class="flow-num">3</span><div>OPEN → kiểm tra <code>time.monotonic() - opened_at ≥ reset_timeout_seconds</code><br>Nếu đủ → transition HALF_OPEN, return True<br>Nếu chưa → return False</div></div>
+
+    <h4><code>call(fn, *args, **kwargs) → T</code></h4>
+  <div class="flow-step"><span class="flow-num">1</span><div>Kiểm tra <code>allow_request()</code> — nếu False → raise <code>CircuitOpenError</code></div></div>
+    <div class="flow-step"><span class="flow-num">2</span><div>Gọi <code>fn(*args, **kwargs)</code></div></div>
+    <div class="flow-step"><span class="flow-num">3</span><div>Thành công → <code>record_success()</code>, return kết quả</div></div>
+    <div class="flow-step"><span class="flow-num">4</span><div>Exception → <code>record_failure()</code>, re-raise</div></div>
+
+    <h4><code>record_success()</code></h4>
+    <ul>
+      <li>Reset <code>failure_count = 0</code>, tăng <code>success_count</code></li>
+      <li>Nếu HALF_OPEN và <code>success_count ≥ success_threshold</code> → transition CLOSED (reason: <code>probe_success</code>)</li>
+    </ul>
+
+    <h4><code>record_failure()</code> — ⚠️ Phần dễ sai nhất</h4>
+    <ul>
+      <li>Tăng <code>failure_count</code>, reset <code>success_count = 0</code></li>
+      <li><strong>if</strong> HALF_OPEN → transition OPEN ngay (reason: <code>probe_failure</code>)</li>
+      <li><strong>elif</strong> failure_count ≥ failure_threshold → transition OPEN (reason: <code>failure_threshold_reached</code>)</li>
+    </ul>
+    <div class="card warn">Dùng <code>if/elif</code>, KHÔNG dùng <code>or</code> — hai trường hợp cần reason khác nhau!</div>
+
+    <h3>6.3 Tham số CircuitBreaker</h3>
+    <table>
+      <thead><tr><th>Tham số</th><th>Mặc định (config)</th><th>Ý nghĩa</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">failure_threshold</span></td><td>3</td><td>Số lỗi liên tiếp trước khi mở circuit</td></tr>
+        <tr><td><span class="param-name">reset_timeout_seconds</span></td><td>2</td><td>Thời gian chờ trước khi thử probe (OPEN → HALF_OPEN)</td></tr>
+        <tr><td><span class="param-name">success_threshold</span></td><td>1</td><td>Số probe thành công để đóng lại circuit</td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.4 transition_log</h3>
+    <p>Mỗi lần chuyển trạng thái ghi log: <code>{from, to, reason, ts}</code> — dùng để tính recovery time và đếm circuit_open_count.</p>
+  </section>
+
+  <!-- 7. Cache -->
+  <section id="cache">
+    <h2>7. Cache — ResponseCache &amp; SharedRedisCache</h2>
+    <p>File: <code>src/reliability_lab/cache.py</code></p>
+
+    <h3>7.1 similarity(a, b) → float [0..1]</h3>
+    <p>Cosine similarity trên character n-grams + word tokens:</p>
+    <ol>
+      <li>Nếu <code>a == b</code> → return 1.0</li>
+      <li>Tokenize: tách từ + character 3-grams (vd: "hello" → ["hello","hel","ell","llo"])</li>
+      <li>Dùng <code>collections.Counter</code> làm vector</li>
+      <li>Cosine: <code>dot(a,b) / (|a| × |b|)</code> với <code>math.sqrt</code></li>
+    </ol>
+
+    <h3>7.2 get(query) → (value | None, score)</h3>
+    <div class="mermaid">
+flowchart TD
+    Q["get(query)"] --> PRIV{"_is_uncacheable?"}
+    PRIV -->|Có| NONE["return None, 0.0"]
+    PRIV -->|Không| EVICT["Xóa entry hết TTL"]
+    EVICT --> SCAN["Tìm entry có similarity cao nhất"]
+    SCAN --> THR{"score ≥ threshold?"}
+    THR -->|Không| MISS["return None, score"]
+    THR -->|Có| FH{"_looks_like_false_hit?"}
+    FH -->|Có| LOG["Ghi false_hit_log, return None"]
+    FH -->|Không| HIT["return value, score"]
+    </div>
+
+    <h3>7.3 Privacy guardrails — <code>_is_uncacheable()</code></h3>
+    <p>Regex chặn query chứa: <code>balance</code>, <code>password</code>, <code>credit card</code>, <code>ssn</code>, <code>user.123</code>, <code>account.456</code>...</p>
+
+    <h3>7.4 False-hit detection — <code>_looks_like_false_hit()</code></h3>
+    <p>So sánh số 4 chữ số (năm, ID) giữa query và cached key. Nếu khác nhau → từ chối cache hit (tránh trả sai câu trả lời về deadline 2024 vs 2026).</p>
+
+    <h3>7.5 Tham số Cache</h3>
+    <table>
+      <thead><tr><th>Tham số</th><th>Mặc định</th><th>Ý nghĩa</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">ttl_seconds</span></td><td>300</td><td>Thời gian sống của cache entry (giây)</td></tr>
+        <tr><td><span class="param-name">similarity_threshold</span></td><td>0.92</td><td>Ngưỡng similarity tối thiểu để coi là cache hit</td></tr>
+        <tr><td><span class="param-name">backend</span></td><td>memory</td><td><code>memory</code> hoặc <code>redis</code></td></tr>
+        <tr><td><span class="param-name">redis_url</span></td><td>redis://localhost:6379/0</td><td>URL kết nối Redis</td></tr>
+        <tr><td><span class="param-name">prefix</span></td><td>rl:cache:</td><td>Prefix key Redis</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8. Providers -->
+  <section id="providers">
+    <h2>8. FakeLLMProvider</h2>
+    <p>File: <code>src/reliability_lab/providers.py</code> — <strong>Không cần sửa</strong></p>
+
+    <table>
+      <thead><tr><th>Tham số</th><th>Primary</th><th>Backup</th><th>Mô tả</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">name</span></td><td>primary</td><td>backup</td><td>Tên provider</td></tr>
+        <tr><td><span class="param-name">fail_rate</span></td><td>0.25 (25%)</td><td>0.05 (5%)</td><td>Xác suất raise ProviderError</td></tr>
+        <tr><td><span class="param-name">base_latency_ms</span></td><td>180</td><td>260</td><td>Độ trễ cơ bản (+ jitter 0-60ms)</td></tr>
+        <tr><td><span class="param-name">cost_per_1k_tokens</span></td><td>0.01</td><td>0.006</td><td>Chi phí mỗi 1000 token</td></tr>
+      </tbody>
+    </table>
+
+    <p><code>complete(prompt)</code> mô phỏng: sleep latency → random fail → tính tokens &amp; cost → trả <code>ProviderResponse</code>.</p>
+  </section>
+
+  <!-- 9. Config -->
+  <section id="config">
+    <h2>9. Tham số cấu hình — <code>configs/default.yaml</code></h2>
+
+    <h3>9.1 Load test</h3>
+    <table>
+      <thead><tr><th>Tham số</th><th>Giá trị</th><th>Ý nghĩa</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">load_test.requests</span></td><td>100</td><td>Số request mỗi chaos scenario</td></tr>
+      </tbody>
+    </table>
+
+    <h3>9.2 Chaos Scenarios</h3>
+    <table>
+      <thead><tr><th>Scenario</th><th>Override</th><th>Kỳ vọng</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>primary_timeout_100</code></td>
+          <td>primary fail_rate = 1.0</td>
+          <td>100% fallback sang backup, circuit primary mở</td>
+        </tr>
+        <tr>
+          <td><code>primary_flaky_50</code></td>
+          <td>primary fail_rate = 0.5</td>
+          <td>Circuit dao động, mix primary/fallback</td>
+        </tr>
+        <tr>
+          <td><code>all_healthy</code></td>
+          <td>không override</td>
+          <td>Baseline — mọi request qua primary</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 10. Chaos & Metrics -->
+  <section id="chaos">
+    <h2>10. Chaos &amp; Metrics</h2>
+
+    <h3>10.1 run_scenario() — logic thu thập metrics</h3>
+    <p>Mỗi request qua <code>gateway.complete()</code> cập nhật <code>RunMetrics</code>:</p>
+    <table>
+      <thead><tr><th>Điều kiện</th><th>Cập nhật</th></tr></thead>
+      <tbody>
+        <tr><td>Mọi request</td><td><code>total_requests += 1</code>, <code>estimated_cost += result.estimated_cost</code></td></tr>
+        <tr><td><code>cache_hit == True</code></td><td><code>cache_hits += 1</code>, <code>estimated_cost_saved += 0.001</code></td></tr>
+        <tr><td><code>route == "fallback"</code></td><td><code>fallback_successes += 1</code>, <code>successful_requests += 1</code></td></tr>
+        <tr><td><code>route == "static_fallback"</code></td><td><code>static_fallbacks += 1</code>, <code>failed_requests += 1</code></td></tr>
+        <tr><td>Các route khác</td><td><code>successful_requests += 1</code></td></tr>
+        <tr><td><code>latency_ms > 0</code></td><td>append vào <code>latencies_ms</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>10.2 RunMetrics — các metric tính toán</h3>
+    <table>
+      <thead><tr><th>Metric / Property</th><th>Công thức</th></tr></thead>
+      <tbody>
+        <tr><td><span class="param-name">availability</span></td><td>successful_requests / total_requests</td></tr>
+        <tr><td><span class="param-name">error_rate</span></td><td>failed_requests / total_requests</td></tr>
+        <tr><td><span class="param-name">cache_hit_rate</span></td><td>cache_hits / total_requests</td></tr>
+        <tr><td><span class="param-name">fallback_success_rate</span></td><td>fallback_successes / (fallback_successes + static_fallbacks)</td></tr>
+        <tr><td><span class="param-name">latency_p50_ms</span></td><td>Percentile 50 của latencies_ms</td></tr>
+        <tr><td><span class="param-name">latency_p95_ms</span></td><td>Percentile 95</td></tr>
+        <tr><td><span class="param-name">latency_p99_ms</span></td><td>Percentile 99</td></tr>
+        <tr><td><span class="param-name">circuit_open_count</span></td><td>Đếm transition_log entries có to="open"</td></tr>
+        <tr><td><span class="param-name">recovery_time_ms</span></td><td>Trung bình (close_ts - open_ts) × 1000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>10.3 calculate_recovery_time_ms()</h3>
+    <p>Duyệt <code>transition_log</code> của mỗi breaker: tìm cặp <code>to="open"</code> → <code>to="closed"</code>, tính delta, trả về trung bình hoặc None.</p>
+
+    <h3>10.4 write_csv()</h3>
+    <p>Flatten <code>to_report_dict()</code>, mở rộng scenarios thành cột <code>scenario_{name}</code>, ghi 1 dòng CSV.</p>
+  </section>
+
+  <!-- 11. Redis -->
+  <section id="redis">
+    <h2>11. Redis Shared Cache</h2>
+    <p>Cho phép nhiều gateway instance chia sẻ cache — in-memory chỉ hoạt động trong 1 process.</p>
+
+    <h3>Data model Redis</h3>
+    <pre><code>Key:   "{prefix}{query_hash}"     # vd: rl:cache:a1b2c3d4e5f6
+Value: Redis Hash { "query": "...", "response": "..." }
+TTL:   EXPIRE key ttl_seconds</code></pre>
+
+    <h3>get() flow</h3>
+    <ol>
+      <li>Privacy check → skip nếu uncacheable</li>
+      <li>Exact match: <code>HGET exact_key response</code> → return (response, 1.0)</li>
+      <li>SCAN <code>prefix*</code>, HGET query, tính similarity, tìm best ≥ threshold</li>
+      <li>False-hit check trước khi return</li>
+    </ol>
+
+    <h3>set() flow</h3>
+    <ol>
+      <li>Skip nếu uncacheable</li>
+      <li><code>HSET key mapping={query, response}</code></li>
+      <li><code>EXPIRE key ttl_seconds</code></li>
+    </ol>
+
+    <pre><code># Kiểm tra Redis
+docker compose exec redis redis-cli KEYS "rl:cache:*"
+docker compose exec redis redis-cli PING</code></pre>
+  </section>
+
+  <!-- 12. Tests -->
+  <section id="tests">
+    <h2>12. Bộ test</h2>
+    <table>
+      <thead><tr><th>File test</th><th>Số test</th><th>Trạng thái ban đầu</th><th>Module liên quan</th></tr></thead>
+      <tbody>
+        <tr><td>test_circuit_breaker.py</td><td>11</td><td><span class="badge badge-todo">FAIL</span></td><td>circuit_breaker.py</td></tr>
+        <tr><td>test_cache.py</td><td>9</td><td><span class="badge badge-todo">FAIL</span></td><td>cache.py (ResponseCache)</td></tr>
+        <tr><td>test_gateway_contract.py</td><td>4</td><td><span class="badge badge-todo">FAIL</span></td><td>gateway.py</td></tr>
+        <tr><td>test_todo_requirements.py</td><td>7</td><td><span class="badge badge-skip">xfail</span></td><td>Tổng hợp — pass khi xong hết</td></tr>
+        <tr><td>test_redis_cache.py</td><td>6</td><td><span class="badge badge-skip">skip</span> nếu không có Redis</td><td>SharedRedisCache</td></tr>
+        <tr><td>test_config.py</td><td>2</td><td><span class="badge badge-done">PASS</span></td><td>config.py</td></tr>
+        <tr><td>test_metrics.py</td><td>2</td><td><span class="badge badge-done">PASS</span></td><td>metrics.py (properties)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Hoàn thành khi:</strong> <code>make test</code> → 0 failures (xfail unexpectedly pass = tốt).</p>
+  </section>
+
+  <!-- 13. Thứ tự implement -->
+  <section id="thu-tu">
+    <h2>13. Thứ tự implement (khuyến nghị)</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>Phase 1 — Circuit Breaker (30–90 phút)</h4>
+        <p>4 methods trong circuit_breaker.py</p>
+        <p>✓ 11 tests passing</p>
+      </div>
+      <div class="card">
+        <h4>Phase 2 — Cache (90–150 phút)</h4>
+        <p>similarity(), get(), set()</p>
+        <p>✓ 9 tests passing</p>
+      </div>
+      <div class="card">
+        <h4>Phase 3 — Gateway (150–195 phút)</h4>
+        <p>complete() pipeline</p>
+        <p>✓ 4 tests passing</p>
+      </div>
+      <div class="card">
+        <h4>Phase 4 — Chaos + Metrics (195–240 phút)</h4>
+        <p>run_scenario(), calculate_recovery_time_ms(), write_csv()</p>
+        <p>✓ metrics.json</p>
+      </div>
+      <div class="card">
+        <h4>Phase 5 — Redis (240–270 phút)</h4>
+        <p>SharedRedisCache get/set</p>
+        <p>✓ 6 Redis tests</p>
+      </div>
+      <div class="card">
+        <h4>Phase 6 — Report (270–300 phút)</h4>
+        <p>Điền reports/final_report.md</p>
+        <p>✓ Nộp bài</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. Deliverables -->
+  <section id="deliverables">
+    <h2>14. Deliverables &amp; Rubric</h2>
+
+    <h3>Nộp bài gồm</h3>
+    <ol>
+      <li>Source code — tất cả TODO hoàn thành</li>
+      <li><code>reports/metrics.json</code> — từ <code>make run-chaos</code></li>
+      <li><code>reports/final_report.md</code> — điền đầy đủ sections</li>
+      <li>Screenshot/log <code>make test</code> passing (có Redis)</li>
+      <li><code>docker-compose.yml</code></li>
+    </ol>
+
+    <h3>Rubric (100 điểm)</h3>
+    <table>
+      <thead><tr><th>Hạng mục</th><th>Điểm</th><th>Tiêu chí</th></tr></thead>
+      <tbody>
+        <tr><td>Circuit breaker &amp; fallback</td><td>25</td><td>State machine đúng, không retry storm, transition log</td></tr>
+        <tr><td>In-memory cache &amp; cost</td><td>15</td><td>Hit rate, cost saved, false-hit examples</td></tr>
+        <tr><td>Redis shared cache</td><td>15</td><td>SharedRedisCache, privacy guardrails, tests pass</td></tr>
+        <tr><td>Observability &amp; metrics</td><td>15</td><td>P50/P95/P99, availability, reproducible</td></tr>
+        <tr><td>Chaos &amp; load testing</td><td>15</td><td>3+ scenarios, recovery evidence, cache comparison</td></tr>
+        <tr><td>Report &amp; code quality</td><td>15</td><td>Architecture diagram, config table, type hints</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Lỗi thường gặp</h3>
+    <table>
+      <thead><tr><th>Lỗi</th><th>Cách tránh</th></tr></thead>
+      <tbody>
+        <tr><td><code>record_failure()</code> dùng <code>or</code> thay <code>if/elif</code></td><td>Tách HALF_OPEN và threshold</td></tr>
+        <tr><td>Cache trả sai câu trả lời</td><td>Thêm privacy + false-hit guardrails</td></tr>
+        <tr><td>Dùng Jaccard thay n-gram cosine</td><td>Implement character 3-grams</td></tr>
+        <tr><td>Redis tests bị skip</td><td>Chạy <code>make docker-up</code> trước test</td></tr>
+        <tr><td>Report không có số liệu</td><td>Paste giá trị thật từ metrics.json</td></tr>
+      </tbody>
+    </table>
+
+    <div class="card success" style="margin-top: 2rem;">
+      <strong>Biết mình xong khi nào?</strong><br>
+      <code>make test</code> → 0 failures &nbsp;|&nbsp;
+      <code>make run-chaos</code> → metrics.json hợp lệ &nbsp;|&nbsp;
+      <code>make typecheck</code> → pass
+    </div>
+  </section>
+
+  <!-- SIMULATION_DASHBOARD_START -->
+
+  <section id="mo-phong">
+    <h2>15. Môi trường &amp; Cấu hình đã thay đổi</h2>
+    <div class="card success">
+      <strong>Môi trường ảo:</strong> <code>.venv</code> đã được tạo và cài <code>pip install -e ".[dev]"</code><br>
+      <strong>Code:</strong> Tất cả TODO đã implement — <code>29 passed, 7 xpassed</code><br>
+      <strong>Config mô phỏng:</strong> <code>configs/simulation.yaml</code> (seed=42)<br>
+      <strong>Script mô phỏng:</strong> <code>python scripts/simulate_users.py --requests 100</code><br>
+      <strong>Per-request random:</strong> Bật — mỗi request có latency/fail_rate/region/device riêng
+    </div>
+
+    <h3>Quy tắc random (lý thuyết)</h3>
+    <p>Công thức sinh giá trị — xem bảng dưới. <strong>Giá trị thực tế</strong> xem ở §17 Dashboard.</p>
+    <table>
+      <thead><tr><th>Tham số / request</th><th>Phạm vi random</th><th>Mục đích</th></tr></thead>
+      <tbody>
+        <tr><td><code>primary_fail_rate</code></td><td>base × 0.6–1.4 (clamp 2–45%)</td><td>Mô phỏng provider không ổn định theo thời điểm</td></tr>
+        <tr><td><code>primary_latency_ms</code></td><td>Gaussian quanh base ±15% (80–450ms)</td><td>Network jitter khác nhau mỗi lần gọi</td></tr>
+        <tr><td><code>backup_fail_rate</code></td><td>base × 0.5–1.8 (clamp 1–20%)</td><td>Backup cũng có độ flaky riêng</td></tr>
+        <tr><td><code>backup_latency_ms</code></td><td>Gaussian quanh base ±12%</td><td>Latency backup thay đổi</td></tr>
+        <tr><td><code>similarity_threshold</code></td><td>Gaussian ±0.02 quanh config</td><td>Cache strictness khác nhau</td></tr>
+        <tr><td><code>client_region</code></td><td>ap-southeast-1, us-east-1, eu-west-1...</td><td>User từ nhiều region</td></tr>
+        <tr><td><code>device_type</code></td><td>web, mobile, api, cli</td><td>Loại client</td></tr>
+        <tr><td><code>think_time_ms</code></td><td>0–300ms</td><td>Thời gian user "suy nghĩ" trước khi gửi</td></tr>
+        <tr><td><code>query</code></td><td>Random từ 20 query trong jsonl</td><td>Nội dung câu hỏi</td></tr>
+        <tr><td><code>user_id</code></td><td>user_1000 – user_9999</td><td>Định danh user ngẫu nhiên</td></tr>
+      </tbody>
+    </table>
+
+    <h3>So sánh default.yaml → simulation.yaml</h3>
+    <p>Các thông số được random trong khoảng thực tế (latency 150–280ms, fail_rate 12–28%, v.v.):</p>
+    <table class="config-diff">
+      <thead><tr><th>Tham số</th><th>default.yaml</th><th>simulation.yaml</th></tr></thead>
+      <tbody><tr class="changed"><td>primary.fail_rate</td><td>0.25</td><td>0.24</td></tr><tr class="changed"><td>primary.base_latency_ms</td><td>180 ms</td><td>178 ms</td></tr><tr class="changed"><td>primary.cost_per_1k_tokens</td><td>0.01 $</td><td>0.009 $</td></tr><tr class="changed"><td>backup.fail_rate</td><td>0.05</td><td>0.03</td></tr><tr class="changed"><td>backup.base_latency_ms</td><td>260 ms</td><td>221 ms</td></tr><tr class="changed"><td>backup.cost_per_1k_tokens</td><td>0.006 $</td><td>0.0043 $</td></tr><tr class=""><td>circuit_breaker.failure_threshold</td><td>3</td><td>3</td></tr><tr class="changed"><td>circuit_breaker.reset_timeout_seconds</td><td>2 s</td><td>3.8 s</td></tr><tr class="changed"><td>cache.similarity_threshold</td><td>0.92</td><td>0.89</td></tr><tr class=""><td>cache.ttl_seconds</td><td>300 s</td><td>300 s</td></tr></tbody>
+    </table>
+    <style>
+      tr.changed td:last-child { color: var(--warn); font-weight: 600; }
+      .route-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; }
+      .route-primary { background:#0d2818; color:var(--accent2); }
+      .route-fallback { background:#1a2a3d; color:var(--accent); }
+      .route-cache { background:#2a1a3d; color:var(--purple); }
+      .route-static { background:#3d1010; color:var(--danger); }
+      .route-privacy { background:#3d2a00; color:var(--warn); }
+      .filter-bar { display:flex; gap:0.5rem; flex-wrap:wrap; margin:1rem 0; }
+      .filter-bar button { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:0.4rem 0.8rem; border-radius:6px; cursor:pointer; }
+      .filter-bar button.active { background:var(--accent); color:#000; border-color:var(--accent); }
+      .chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1rem 0; }
+      .chart-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; }
+      .chart-box canvas { max-height:260px; }
+      .stat-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.75rem; margin:1rem 0; }
+      .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+      .stat-card .val { font-size:1.5rem; font-weight:700; color:var(--accent); }
+      .stat-card .lbl { font-size:0.75rem; color:var(--muted); }
+      #request-table { font-size:0.8rem; }
+      #request-table tbody tr:hover { background:var(--surface2); }
+      @media(max-width:900px) { .chart-grid,.stat-cards { grid-template-columns:1fr 1fr; } }
+    </style>
+  </section>
+
+  <section id="ket-qua">
+    <h2>16. Kết quả mô phỏng 100 requests ngẫu nhiên</h2>
+    <p>100 user ngẫu nhiên — <strong>mỗi request có config random riêng</strong> (latency, fail_rate, region, device) + query random từ <code>data/sample_queries.jsonl</code>.</p>
+
+    <div class="stat-cards" id="stat-cards"></div>
+
+    <h3>Bảng metrics tổng hợp</h3>
+    <table>
+      <thead><tr><th>Metric</th><th>Giá trị</th><th>Giải thích</th></tr></thead>
+      <tbody>
+        <tr><td>total_requests</td><td>100</td><td>Tổng số request mô phỏng</td></tr>
+        <tr><td>availability</td><td>98.0%</td><td>Tỷ lệ thành công (không static_fallback)</td></tr>
+        <tr><td>error_rate</td><td>2.0%</td><td>Tỷ lệ static_fallback</td></tr>
+        <tr><td>latency_p50_ms</td><td>217.88 ms</td><td>Median latency (không tính cache hit)</td></tr>
+        <tr><td>latency_p95_ms</td><td>279.59 ms</td><td>P95 latency</td></tr>
+        <tr><td>latency_p99_ms</td><td>297.45 ms</td><td>P99 latency</td></tr>
+        <tr><td>cache_hit_rate</td><td>64.0%</td><td>Tỷ lệ trả về từ cache</td></tr>
+        <tr><td>fallback_success_rate</td><td>83.3%</td><td>Fallback thành công / tổng fallback</td></tr>
+        <tr><td>circuit_open_count</td><td>1</td><td>Số lần circuit chuyển OPEN</td></tr>
+        <tr><td>estimated_cost</td><td>$0.014808</td><td>Chi phí LLM ước tính</td></tr>
+        <tr><td>estimated_cost_saved</td><td>$0.064</td><td>Tiết kiệm nhờ cache hit</td></tr>
+        <tr><td>unique_users</td><td>99</td><td>Số user khác nhau</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Phân bố route</h3>
+    <table>
+      <thead><tr><th>Route</th><th>Số lượng</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td><code>primary</code></td><td>24</td><td>24.0%</td></tr><tr><td><code>fallback</code></td><td>10</td><td>10.0%</td></tr><tr><td><code>static_fallback</code></td><td>2</td><td>2.0%</td></tr><tr><td><code>cache_hit:0.97</code></td><td>3</td><td>3.0%</td></tr><tr><td><code>cache_hit:1.00</code></td><td>59</td><td>59.0%</td></tr><tr><td><code>cache_hit:0.98</code></td><td>2</td><td>2.0%</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="cache-compare">
+    <h2>17. So sánh Có cache vs Không cache</h2>
+    
+    <div class="card info">
+      <strong>Cùng 100 request</strong> (cùng seed, cùng query/user/random profile) —
+      chạy 2 lần: <code>cache.enabled=false</code> rồi <code>cache.enabled=true</code>.
+    </div>
+    <table class="config-diff">
+      <thead>
+        <tr><th>Metric</th><th>Không cache</th><th>Có cache</th><th>Delta (có − không)</th></tr>
+      </thead>
+      <tbody><tr><td>Latency P50</td><td>226.8 ms</td><td>217.9 ms</td><td>-8.93</td></tr><tr><td>Latency P95</td><td>299.9 ms</td><td>279.6 ms</td><td>-20.33</td></tr><tr><td>Latency P99</td><td>338.8 ms</td><td>297.4 ms</td><td>-41.34</td></tr><tr><td>Chi phí ước tính</td><td>$0.044958</td><td>$0.014808</td><td>-0.030150</td></tr><tr><td>Cache hit rate</td><td>0.0%</td><td>64.0%</td><td>+64.0%</td></tr><tr><td>Availability</td><td>96.0%</td><td>98.0%</td><td>+2.0%</td></tr><tr><td>Circuit open count</td><td>0</td><td>1</td><td>-</td></tr><tr><td>Fallback success rate</td><td>86.7%</td><td>83.3%</td><td>-</td></tr></tbody>
+    </table>
+    <p style="font-size:0.85rem;color:var(--muted);">Same request sequence (seed fixed); cache OFF run first, then cache ON.</p>
+    
+    <div class="chart-grid" style="margin-top:1rem;">
+      <div class="chart-box"><h4>Latency P50 / P95 / P99</h4><canvas id="chartCacheLatency"></canvas></div>
+      <div class="chart-box"><h4>Cost &amp; Cache hit rate</h4><canvas id="chartCacheCost"></canvas></div>
+    </div>
+  </section>
+
+  <section id="visual">
+    <h2>18. Dashboard trực quan</h2>
+
+    <section id="random-thuc-te">
+      <h3>📊 Giá trị random THỰC TẾ (từ lần chạy simulation)</h3>
+      
+    <div class="card info">
+      <strong>✓ Có hỗ trợ random thật</strong> — Bảng dưới ghi <em>giá trị random thực tế</em>
+      từ lần chạy simulation gần nhất,
+      không phải lý thuyết.
+    </div>
+
+    <h4>Thống kê random số (min / trung bình / max)</h4>
+    <table>
+      <thead>
+        <tr><th>Tham số</th><th>Mô tả</th><th>Min</th><th>Trung bình</th><th>Max</th></tr>
+      </thead>
+      <tbody><tr><td><code>primary_fail_rate</code></td><td>Tỷ lệ lỗi primary (random/request)</td><td>14.5%</td><td>23.5%</td><td>33.3%</td></tr><tr><td><code>backup_fail_rate</code></td><td>Tỷ lệ lỗi backup (random/request)</td><td>1.5%</td><td>3.4%</td><td>5.4%</td></tr><tr><td><code>primary_latency_ms</code></td><td>Latency cấu hình primary</td><td>117 ms</td><td>180 ms</td><td>266 ms</td></tr><tr><td><code>backup_latency_ms</code></td><td>Latency cấu hình backup</td><td>166 ms</td><td>216 ms</td><td>276 ms</td></tr><tr><td><code>similarity_threshold</code></td><td>Ngưỡng cache similarity</td><td>0.84</td><td>0.89</td><td>0.95</td></tr><tr><td><code>think_time_ms</code></td><td>Thời gian user chờ trước khi gửi</td><td>7 ms</td><td>156 ms</td><td>300 ms</td></tr></tbody>
+    </table>
+
+    <h4>Phân bố random phân loại (giá trị thực tế)</h4>
+    <table>
+      <thead><tr><th>Giá trị</th><th colspan="2">Loại</th><th>Số request</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td colspan='5'><strong>client_region</strong></td></tr><tr><td><code>sa-east-1</code></td><td colspan='2'>—</td><td>27 request</td><td>27.0%</td></tr><tr><td><code>ap-northeast-1</code></td><td colspan='2'>—</td><td>23 request</td><td>23.0%</td></tr><tr><td><code>eu-west-1</code></td><td colspan='2'>—</td><td>22 request</td><td>22.0%</td></tr><tr><td><code>us-east-1</code></td><td colspan='2'>—</td><td>18 request</td><td>18.0%</td></tr><tr><td><code>ap-southeast-1</code></td><td colspan='2'>—</td><td>10 request</td><td>10.0%</td></tr>
+        <tr><td colspan='5'><strong>device_type</strong></td></tr><tr><td><code>api</code></td><td colspan='2'>—</td><td>27 request</td><td>27.0%</td></tr><tr><td><code>mobile</code></td><td colspan='2'>—</td><td>26 request</td><td>26.0%</td></tr><tr><td><code>web</code></td><td colspan='2'>—</td><td>24 request</td><td>24.0%</td></tr><tr><td><code>cli</code></td><td colspan='2'>—</td><td>23 request</td><td>23.0%</td></tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:0.85rem;color:var(--muted);">
+      Unique users: <strong>99</strong> |
+      Query ids được dùng: <strong>20</strong> / 20
+    </p>
+
+    <h4>Mẫu 8 request đầu — toàn bộ thông tin random</h4>
+    <div style="overflow-x:auto;">
+      <table style="font-size:0.78rem;">
+        <thead>
+          <tr>
+            <th>ID</th><th>User</th><th>Region</th><th>Device</th>
+            <th>Primary (fail/lat)</th><th>Backup (fail/lat)</th>
+            <th>Similarity</th><th>Think</th><th>Query</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+          <td>req_0001</td>
+          <td>user_4811</td>
+          <td>sa-east-1</td>
+          <td>web</td>
+          <td>14.9% / 175ms</td>
+          <td>4.4% / 239ms</td>
+          <td>0.9</td>
+          <td>177ms</td>
+          <td>q4</td>
+        </tr><tr>
+          <td>req_0002</td>
+          <td>user_3615</td>
+          <td>ap-northeast-1</td>
+          <td>mobile</td>
+          <td>26.0% / 138ms</td>
+          <td>4.2% / 205ms</td>
+          <td>0.88</td>
+          <td>135ms</td>
+          <td>q17</td>
+        </tr><tr>
+          <td>req_0003</td>
+          <td>user_1711</td>
+          <td>ap-southeast-1</td>
+          <td>cli</td>
+          <td>20.9% / 215ms</td>
+          <td>2.8% / 276ms</td>
+          <td>0.91</td>
+          <td>29ms</td>
+          <td>q14</td>
+        </tr><tr>
+          <td>req_0004</td>
+          <td>user_4733</td>
+          <td>sa-east-1</td>
+          <td>api</td>
+          <td>24.7% / 203ms</td>
+          <td>3.7% / 216ms</td>
+          <td>0.89</td>
+          <td>173ms</td>
+          <td>q15</td>
+        </tr><tr>
+          <td>req_0005</td>
+          <td>user_2169</td>
+          <td>ap-northeast-1</td>
+          <td>api</td>
+          <td>33.3% / 210ms</td>
+          <td>3.0% / 179ms</td>
+          <td>0.87</td>
+          <td>49ms</td>
+          <td>q10</td>
+        </tr><tr>
+          <td>req_0006</td>
+          <td>user_4752</td>
+          <td>eu-west-1</td>
+          <td>mobile</td>
+          <td>26.6% / 158ms</td>
+          <td>3.3% / 216ms</td>
+          <td>0.91</td>
+          <td>205ms</td>
+          <td>q20</td>
+        </tr><tr>
+          <td>req_0007</td>
+          <td>user_8517</td>
+          <td>sa-east-1</td>
+          <td>api</td>
+          <td>29.9% / 169ms</td>
+          <td>5.1% / 226ms</td>
+          <td>0.85</td>
+          <td>64ms</td>
+          <td>q2</td>
+        </tr><tr>
+          <td>req_0008</td>
+          <td>user_3266</td>
+          <td>sa-east-1</td>
+          <td>cli</td>
+          <td>19.5% / 178ms</td>
+          <td>2.5% / 255ms</td>
+          <td>0.88</td>
+          <td>269ms</td>
+          <td>q5</td>
+        </tr></tbody>
+      </table>
+    </div>
+    
+    </section>
+
+    <h3>Biểu đồ kết quả</h3>
+    <div class="chart-grid">
+      <div class="chart-box"><h4>Phân bố Route</h4><canvas id="chartRoutes"></canvas></div>
+      <div class="chart-box"><h4>Latency thực tế (ms)</h4><canvas id="chartLatency"></canvas></div>
+      <div class="chart-box"><h4>Query Risk</h4><canvas id="chartRisk"></canvas></div>
+      <div class="chart-box"><h4>Client Region</h4><canvas id="chartRegion"></canvas></div>
+      <div class="chart-box"><h4>Primary fail_rate / request</h4><canvas id="chartFailRate"></canvas></div>
+      <div class="chart-box"><h4>Device type (random)</h4><canvas id="chartDevice"></canvas></div>
+    </div>
+
+    <h3>Bộ lọc request</h3>
+    <div class="filter-bar" id="filter-bar">
+      <button class="active" data-filter="all">Tất cả (100)</button>
+      <button data-filter="primary">Primary</button>
+      <button data-filter="fallback">Fallback</button>
+      <button data-filter="cache">Cache Hit</button>
+      <button data-filter="privacy">Privacy query</button>
+      <button data-filter="error">Lỗi</button>
+      <button data-filter="high-fail">Fail rate cao (&gt;30%)</button>
+    </div>
+
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem;">
+      Cột <strong>Config</strong> = tham số random của request đó trước khi gọi gateway.
+      Click hàng để xem chi tiết.
+    </p>
+
+    <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
+      <table id="request-table">
+        <thead>
+          <tr>
+            <th>#</th><th>User</th><th>Region</th><th>Query</th><th>Risk</th>
+            <th>Config (random)</th><th>Route</th><th>Latency</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="request-tbody"></tbody>
+      </table>
+    </div>
+    <div id="request-detail" class="card" style="margin-top:1rem;display:none;"></div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    const METRICS = {"total_requests": 100, "availability": 0.98, "error_rate": 0.02, "latency_p50_ms": 217.88, "latency_p95_ms": 279.59, "latency_p99_ms": 297.45, "cache_hit_rate": 0.64, "estimated_cost": 0.014808, "estimated_cost_saved": 0.064, "circuit_open_count": 1, "fallback_success_rate": 0.8333};
+    const SUMMARY = {"route_distribution": {"primary": 24, "fallback": 10, "static_fallback": 2, "cache_hit:0.97": 3, "cache_hit:1.00": 59, "cache_hit:0.98": 2}, "error_distribution": {"backup simulated failure": 2}, "region_distribution": {"sa-east-1": 27, "ap-northeast-1": 23, "ap-southeast-1": 10, "eu-west-1": 22, "us-east-1": 18}, "unique_users": 99, "cache_enabled": true, "per_request_random": true, "seed": 42, "config_path": "configs/simulation.yaml"};
+    const REQUESTS = [{"request_id": "req_0001", "user_id": "user_4811", "timestamp": 1782879004.7629318, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 202.9, "estimated_cost": 0.000459, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 177.1, "primary_fail_rate": 0.149, "primary_latency_ms": 175, "backup_fail_rate": 0.044, "backup_latency_ms": 239, "similarity_threshold": 0.9}, {"request_id": "req_0002", "user_id": "user_3615", "timestamp": 1782879004.9663684, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 179.8, "estimated_cost": 0.000504, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 134.8, "primary_fail_rate": 0.26, "primary_latency_ms": 138, "backup_fail_rate": 0.042, "backup_latency_ms": 205, "similarity_threshold": 0.88}, {"request_id": "req_0003", "user_id": "user_1711", "timestamp": 1782879005.1471782, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 305.37, "estimated_cost": 0.000292, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "cli", "think_time_ms": 29.0, "primary_fail_rate": 0.209, "primary_latency_ms": 215, "backup_fail_rate": 0.028, "backup_latency_ms": 276, "similarity_threshold": 0.91}, {"request_id": "req_0004", "user_id": "user_4733", "timestamp": 1782879005.6816669, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 218.03, "estimated_cost": 0.000621, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 173.2, "primary_fail_rate": 0.247, "primary_latency_ms": 203, "backup_fail_rate": 0.037, "backup_latency_ms": 216, "similarity_threshold": 0.89}, {"request_id": "req_0005", "user_id": "user_2169", "timestamp": 1782879005.9001343, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 217.73, "estimated_cost": 0.000621, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 48.8, "primary_fail_rate": 0.333, "primary_latency_ms": 210, "backup_fail_rate": 0.03, "backup_latency_ms": 179, "similarity_threshold": 0.87}, {"request_id": "req_0006", "user_id": "user_4752", "timestamp": 1782879006.1186104, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "static_fallback", "provider": null, "cache_hit": false, "latency_ms": 0.0, "estimated_cost": 0.0, "error": "backup simulated failure", "success": false, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 205.4, "primary_fail_rate": 0.266, "primary_latency_ms": 158, "backup_fail_rate": 0.033, "backup_latency_ms": 216, "similarity_threshold": 0.91}, {"request_id": "req_0007", "user_id": "user_8517", "timestamp": 1782879006.5218475, "query_id": "q2", "query": "What should I do when API calls return 429?", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 190.54, "estimated_cost": 0.00054, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 63.8, "primary_fail_rate": 0.299, "primary_latency_ms": 169, "backup_fail_rate": 0.051, "backup_latency_ms": 226, "similarity_threshold": 0.85}, {"request_id": "req_0008", "user_id": "user_3266", "timestamp": 1782879006.7128158, "query_id": "q5", "query": "Summarize the admission FAQ in 5 bullets.", "query_risk": "faq", "route": "cache_hit:0.97", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 269.3, "primary_fail_rate": 0.195, "primary_latency_ms": 178, "backup_fail_rate": 0.025, "backup_latency_ms": 255, "similarity_threshold": 0.88}, {"request_id": "req_0009", "user_id": "user_8668", "timestamp": 1782879006.713547, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "cli", "think_time_ms": 178.9, "primary_fail_rate": 0.239, "primary_latency_ms": 179, "backup_fail_rate": 0.021, "backup_latency_ms": 168, "similarity_threshold": 0.87}, {"request_id": "req_0010", "user_id": "user_3591", "timestamp": 1782879006.7139435, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "api", "think_time_ms": 230.6, "primary_fail_rate": 0.192, "primary_latency_ms": 117, "backup_fail_rate": 0.042, "backup_latency_ms": 200, "similarity_threshold": 0.88}, {"request_id": "req_0011", "user_id": "user_4258", "timestamp": 1782879006.7142816, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 261.2, "primary_fail_rate": 0.145, "primary_latency_ms": 170, "backup_fail_rate": 0.053, "backup_latency_ms": 179, "similarity_threshold": 0.88}, {"request_id": "req_0012", "user_id": "user_6038", "timestamp": 1782879006.7145948, "query_id": "q5", "query": "Summarize the admission FAQ in 5 bullets.", "query_risk": "faq", "route": "cache_hit:0.97", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "api", "think_time_ms": 146.6, "primary_fail_rate": 0.216, "primary_latency_ms": 212, "backup_fail_rate": 0.051, "backup_latency_ms": 276, "similarity_threshold": 0.9}, {"request_id": "req_0013", "user_id": "user_8787", "timestamp": 1782879006.714981, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 276.77, "estimated_cost": 0.000495, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "web", "think_time_ms": 293.4, "primary_fail_rate": 0.155, "primary_latency_ms": 224, "backup_fail_rate": 0.018, "backup_latency_ms": 176, "similarity_threshold": 0.88}, {"request_id": "req_0014", "user_id": "user_7118", "timestamp": 1782879006.9922485, "query_id": "q18", "query": "Explain how half-open state prevents retry storms.", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 172.35, "estimated_cost": 0.000621, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 213.9, "primary_fail_rate": 0.176, "primary_latency_ms": 142, "backup_fail_rate": 0.053, "backup_latency_ms": 214, "similarity_threshold": 0.87}, {"request_id": "req_0015", "user_id": "user_1964", "timestamp": 1782879007.16504, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "mobile", "think_time_ms": 176.5, "primary_fail_rate": 0.317, "primary_latency_ms": 158, "backup_fail_rate": 0.017, "backup_latency_ms": 227, "similarity_threshold": 0.92}, {"request_id": "req_0016", "user_id": "user_8744", "timestamp": 1782879007.166263, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "cli", "think_time_ms": 64.3, "primary_fail_rate": 0.157, "primary_latency_ms": 201, "backup_fail_rate": 0.035, "backup_latency_ms": 225, "similarity_threshold": 0.92}, {"request_id": "req_0017", "user_id": "user_2612", "timestamp": 1782879007.167419, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 127.1, "primary_fail_rate": 0.295, "primary_latency_ms": 184, "backup_fail_rate": 0.019, "backup_latency_ms": 204, "similarity_threshold": 0.86}, {"request_id": "req_0018", "user_id": "user_2235", "timestamp": 1782879007.173229, "query_id": "q2", "query": "What should I do when API calls return 429?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "cli", "think_time_ms": 42.1, "primary_fail_rate": 0.221, "primary_latency_ms": 149, "backup_fail_rate": 0.025, "backup_latency_ms": 265, "similarity_threshold": 0.9}, {"request_id": "req_0019", "user_id": "user_3724", "timestamp": 1782879007.176903, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 290.7, "primary_fail_rate": 0.299, "primary_latency_ms": 185, "backup_fail_rate": 0.04, "backup_latency_ms": 211, "similarity_threshold": 0.92}, {"request_id": "req_0020", "user_id": "user_8454", "timestamp": 1782879007.1791816, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "web", "think_time_ms": 295.6, "primary_fail_rate": 0.237, "primary_latency_ms": 184, "backup_fail_rate": 0.017, "backup_latency_ms": 247, "similarity_threshold": 0.89}, {"request_id": "req_0021", "user_id": "user_9883", "timestamp": 1782879007.1798925, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 57.0, "primary_fail_rate": 0.225, "primary_latency_ms": 262, "backup_fail_rate": 0.037, "backup_latency_ms": 197, "similarity_threshold": 0.89}, {"request_id": "req_0022", "user_id": "user_2122", "timestamp": 1782879007.1810246, "query_id": "q2", "query": "What should I do when API calls return 429?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 17.1, "primary_fail_rate": 0.288, "primary_latency_ms": 211, "backup_fail_rate": 0.035, "backup_latency_ms": 233, "similarity_threshold": 0.85}, {"request_id": "req_0023", "user_id": "user_9565", "timestamp": 1782879007.1816363, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 254.78, "estimated_cost": 0.000486, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 173.7, "primary_fail_rate": 0.157, "primary_latency_ms": 195, "backup_fail_rate": 0.052, "backup_latency_ms": 200, "similarity_threshold": 0.9}, {"request_id": "req_0024", "user_id": "user_2188", "timestamp": 1782879007.4396603, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 234.45, "estimated_cost": 0.000702, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 201.5, "primary_fail_rate": 0.323, "primary_latency_ms": 190, "backup_fail_rate": 0.024, "backup_latency_ms": 261, "similarity_threshold": 0.88}, {"request_id": "req_0025", "user_id": "user_5002", "timestamp": 1782879007.6765308, "query_id": "q1", "query": "Summarize the refund policy for a student who missed the deadline.", "query_risk": "policy", "route": "cache_hit:0.98", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "api", "think_time_ms": 39.7, "primary_fail_rate": 0.232, "primary_latency_ms": 266, "backup_fail_rate": 0.018, "backup_latency_ms": 220, "similarity_threshold": 0.89}, {"request_id": "req_0026", "user_id": "user_2697", "timestamp": 1782879007.6791785, "query_id": "q12", "query": "What are the admission requirements for international students?", "query_risk": "faq", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 161.61, "estimated_cost": 0.000297, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 200.4, "primary_fail_rate": 0.199, "primary_latency_ms": 147, "backup_fail_rate": 0.027, "backup_latency_ms": 233, "similarity_threshold": 0.85}, {"request_id": "req_0027", "user_id": "user_5325", "timestamp": 1782879007.8420808, "query_id": "q5", "query": "Summarize the admission FAQ in 5 bullets.", "query_risk": "faq", "route": "cache_hit:0.97", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 215.3, "primary_fail_rate": 0.195, "primary_latency_ms": 211, "backup_fail_rate": 0.021, "backup_latency_ms": 193, "similarity_threshold": 0.9}, {"request_id": "req_0028", "user_id": "user_5291", "timestamp": 1782879007.843579, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 13.2, "primary_fail_rate": 0.238, "primary_latency_ms": 220, "backup_fail_rate": 0.019, "backup_latency_ms": 192, "similarity_threshold": 0.88}, {"request_id": "req_0029", "user_id": "user_3426", "timestamp": 1782879007.845289, "query_id": "q6", "query": "What is the password reset process for user 456?", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 180.61, "estimated_cost": 0.000531, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "mobile", "think_time_ms": 163.7, "primary_fail_rate": 0.286, "primary_latency_ms": 151, "backup_fail_rate": 0.015, "backup_latency_ms": 212, "similarity_threshold": 0.9}, {"request_id": "req_0030", "user_id": "user_7658", "timestamp": 1782879008.026599, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "api", "think_time_ms": 63.0, "primary_fail_rate": 0.168, "primary_latency_ms": 157, "backup_fail_rate": 0.046, "backup_latency_ms": 274, "similarity_threshold": 0.89}, {"request_id": "req_0031", "user_id": "user_7745", "timestamp": 1782879008.0312903, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "cli", "think_time_ms": 7.4, "primary_fail_rate": 0.288, "primary_latency_ms": 195, "backup_fail_rate": 0.021, "backup_latency_ms": 212, "similarity_threshold": 0.89}, {"request_id": "req_0032", "user_id": "user_4728", "timestamp": 1782879008.0329525, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 59.9, "primary_fail_rate": 0.195, "primary_latency_ms": 180, "backup_fail_rate": 0.049, "backup_latency_ms": 208, "similarity_threshold": 0.91}, {"request_id": "req_0033", "user_id": "user_9785", "timestamp": 1782879008.037029, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "api", "think_time_ms": 192.4, "primary_fail_rate": 0.149, "primary_latency_ms": 186, "backup_fail_rate": 0.049, "backup_latency_ms": 243, "similarity_threshold": 0.84}, {"request_id": "req_0034", "user_id": "user_6139", "timestamp": 1782879008.0425472, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 32.5, "primary_fail_rate": 0.324, "primary_latency_ms": 231, "backup_fail_rate": 0.022, "backup_latency_ms": 267, "similarity_threshold": 0.86}, {"request_id": "req_0035", "user_id": "user_9821", "timestamp": 1782879008.044361, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 212.6, "primary_fail_rate": 0.26, "primary_latency_ms": 151, "backup_fail_rate": 0.037, "backup_latency_ms": 219, "similarity_threshold": 0.94}, {"request_id": "req_0036", "user_id": "user_7691", "timestamp": 1782879008.0453732, "query_id": "q7", "query": "Summarize the refund policy for a student who missed the 2024 deadline.", "query_risk": "policy_dated", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 244.11, "estimated_cost": 0.000414, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 215.9, "primary_fail_rate": 0.214, "primary_latency_ms": 213, "backup_fail_rate": 0.028, "backup_latency_ms": 237, "similarity_threshold": 0.88}, {"request_id": "req_0037", "user_id": "user_1006", "timestamp": 1782879008.2909284, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 184.7, "primary_fail_rate": 0.221, "primary_latency_ms": 174, "backup_fail_rate": 0.031, "backup_latency_ms": 234, "similarity_threshold": 0.88}, {"request_id": "req_0038", "user_id": "user_3780", "timestamp": 1782879008.2923214, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "cli", "think_time_ms": 132.6, "primary_fail_rate": 0.199, "primary_latency_ms": 146, "backup_fail_rate": 0.041, "backup_latency_ms": 235, "similarity_threshold": 0.9}, {"request_id": "req_0039", "user_id": "user_5011", "timestamp": 1782879008.29304, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 182.08, "estimated_cost": 0.000423, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "api", "think_time_ms": 67.4, "primary_fail_rate": 0.198, "primary_latency_ms": 158, "backup_fail_rate": 0.019, "backup_latency_ms": 189, "similarity_threshold": 0.89}, {"request_id": "req_0040", "user_id": "user_3417", "timestamp": 1782879008.47576, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 202.84, "estimated_cost": 0.000432, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 215.5, "primary_fail_rate": 0.261, "primary_latency_ms": 181, "backup_fail_rate": 0.05, "backup_latency_ms": 191, "similarity_threshold": 0.87}, {"request_id": "req_0041", "user_id": "user_5082", "timestamp": 1782879008.6798887, "query_id": "q1", "query": "Summarize the refund policy for a student who missed the deadline.", "query_risk": "policy", "route": "cache_hit:0.98", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "mobile", "think_time_ms": 241.2, "primary_fail_rate": 0.315, "primary_latency_ms": 213, "backup_fail_rate": 0.045, "backup_latency_ms": 178, "similarity_threshold": 0.88}, {"request_id": "req_0042", "user_id": "user_9270", "timestamp": 1782879008.682454, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 225.12, "estimated_cost": 0.000585, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 285.0, "primary_fail_rate": 0.232, "primary_latency_ms": 190, "backup_fail_rate": 0.054, "backup_latency_ms": 183, "similarity_threshold": 0.91}, {"request_id": "req_0043", "user_id": "user_9540", "timestamp": 1782879008.9077942, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "cli", "think_time_ms": 77.8, "primary_fail_rate": 0.303, "primary_latency_ms": 123, "backup_fail_rate": 0.044, "backup_latency_ms": 204, "similarity_threshold": 0.89}, {"request_id": "req_0044", "user_id": "user_4788", "timestamp": 1782879008.9117334, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "api", "think_time_ms": 95.9, "primary_fail_rate": 0.264, "primary_latency_ms": 176, "backup_fail_rate": 0.026, "backup_latency_ms": 231, "similarity_threshold": 0.88}, {"request_id": "req_0045", "user_id": "user_1320", "timestamp": 1782879008.9130023, "query_id": "q13", "query": "Describe the social security number validation process.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 229.84, "estimated_cost": 0.000684, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 124.7, "primary_fail_rate": 0.277, "primary_latency_ms": 175, "backup_fail_rate": 0.031, "backup_latency_ms": 211, "similarity_threshold": 0.9}, {"request_id": "req_0046", "user_id": "user_7371", "timestamp": 1782879009.1429389, "query_id": "q19", "query": "What is the SSN for employee 1234?", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 252.53, "estimated_cost": 0.000378, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 146.5, "primary_fail_rate": 0.217, "primary_latency_ms": 202, "backup_fail_rate": 0.044, "backup_latency_ms": 221, "similarity_threshold": 0.89}, {"request_id": "req_0047", "user_id": "user_2375", "timestamp": 1782879009.3956168, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 272.1, "primary_fail_rate": 0.272, "primary_latency_ms": 190, "backup_fail_rate": 0.048, "backup_latency_ms": 180, "similarity_threshold": 0.87}, {"request_id": "req_0048", "user_id": "user_7906", "timestamp": 1782879009.398643, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "cli", "think_time_ms": 98.1, "primary_fail_rate": 0.17, "primary_latency_ms": 169, "backup_fail_rate": 0.03, "backup_latency_ms": 223, "similarity_threshold": 0.89}, {"request_id": "req_0049", "user_id": "user_1508", "timestamp": 1782879009.4047115, "query_id": "q9", "query": "Show credit card details for account 7890.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 265.64, "estimated_cost": 0.000138, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 195.0, "primary_fail_rate": 0.304, "primary_latency_ms": 134, "backup_fail_rate": 0.017, "backup_latency_ms": 229, "similarity_threshold": 0.9}, {"request_id": "req_0050", "user_id": "user_2876", "timestamp": 1782879009.8127098, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "mobile", "think_time_ms": 139.5, "primary_fail_rate": 0.182, "primary_latency_ms": 193, "backup_fail_rate": 0.02, "backup_latency_ms": 222, "similarity_threshold": 0.89}, {"request_id": "req_0051", "user_id": "user_4978", "timestamp": 1782879009.8139582, "query_id": "q6", "query": "What is the password reset process for user 456?", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 227.86, "estimated_cost": 0.000468, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "cli", "think_time_ms": 282.4, "primary_fail_rate": 0.329, "primary_latency_ms": 182, "backup_fail_rate": 0.027, "backup_latency_ms": 224, "similarity_threshold": 0.9}, {"request_id": "req_0052", "user_id": "user_9289", "timestamp": 1782879010.0419085, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 194.1, "estimated_cost": 0.000783, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 104.2, "primary_fail_rate": 0.278, "primary_latency_ms": 165, "backup_fail_rate": 0.046, "backup_latency_ms": 259, "similarity_threshold": 0.87}, {"request_id": "req_0053", "user_id": "user_5425", "timestamp": 1782879010.237095, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "cli", "think_time_ms": 212.2, "primary_fail_rate": 0.146, "primary_latency_ms": 150, "backup_fail_rate": 0.032, "backup_latency_ms": 235, "similarity_threshold": 0.86}, {"request_id": "req_0054", "user_id": "user_5569", "timestamp": 1782879010.2412703, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 96.7, "primary_fail_rate": 0.299, "primary_latency_ms": 148, "backup_fail_rate": 0.032, "backup_latency_ms": 213, "similarity_threshold": 0.89}, {"request_id": "req_0055", "user_id": "user_5232", "timestamp": 1782879010.2431912, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "cli", "think_time_ms": 255.3, "primary_fail_rate": 0.191, "primary_latency_ms": 142, "backup_fail_rate": 0.03, "backup_latency_ms": 229, "similarity_threshold": 0.9}, {"request_id": "req_0056", "user_id": "user_4937", "timestamp": 1782879010.2440062, "query_id": "q11", "query": "List three benefits of response caching in LLM gateways.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 25.7, "primary_fail_rate": 0.198, "primary_latency_ms": 132, "backup_fail_rate": 0.037, "backup_latency_ms": 189, "similarity_threshold": 0.89}, {"request_id": "req_0057", "user_id": "user_8753", "timestamp": 1782879010.24479, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "cli", "think_time_ms": 207.5, "primary_fail_rate": 0.268, "primary_latency_ms": 130, "backup_fail_rate": 0.019, "backup_latency_ms": 223, "similarity_threshold": 0.88}, {"request_id": "req_0058", "user_id": "user_6169", "timestamp": 1782879010.2458491, "query_id": "q18", "query": "Explain how half-open state prevents retry storms.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 92.0, "primary_fail_rate": 0.246, "primary_latency_ms": 138, "backup_fail_rate": 0.028, "backup_latency_ms": 240, "similarity_threshold": 0.89}, {"request_id": "req_0059", "user_id": "user_5636", "timestamp": 1782879010.246773, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 249.85, "estimated_cost": 0.000405, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 217.4, "primary_fail_rate": 0.287, "primary_latency_ms": 216, "backup_fail_rate": 0.022, "backup_latency_ms": 208, "similarity_threshold": 0.91}, {"request_id": "req_0060", "user_id": "user_3068", "timestamp": 1782879010.4968858, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 281.37, "estimated_cost": 0.000159, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 82.3, "primary_fail_rate": 0.304, "primary_latency_ms": 170, "backup_fail_rate": 0.027, "backup_latency_ms": 245, "similarity_threshold": 0.92}, {"request_id": "req_0061", "user_id": "user_2869", "timestamp": 1782879010.9713655, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 289.6, "primary_fail_rate": 0.164, "primary_latency_ms": 199, "backup_fail_rate": 0.034, "backup_latency_ms": 222, "similarity_threshold": 0.89}, {"request_id": "req_0062", "user_id": "user_7818", "timestamp": 1782879010.976279, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "api", "think_time_ms": 25.6, "primary_fail_rate": 0.221, "primary_latency_ms": 211, "backup_fail_rate": 0.017, "backup_latency_ms": 237, "similarity_threshold": 0.89}, {"request_id": "req_0063", "user_id": "user_1986", "timestamp": 1782879010.9791226, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 258.0, "primary_fail_rate": 0.258, "primary_latency_ms": 144, "backup_fail_rate": 0.03, "backup_latency_ms": 189, "similarity_threshold": 0.91}, {"request_id": "req_0064", "user_id": "user_1043", "timestamp": 1782879010.980905, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 47.1, "primary_fail_rate": 0.328, "primary_latency_ms": 214, "backup_fail_rate": 0.039, "backup_latency_ms": 247, "similarity_threshold": 0.89}, {"request_id": "req_0065", "user_id": "user_4241", "timestamp": 1782879010.9871132, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "cli", "think_time_ms": 21.4, "primary_fail_rate": 0.23, "primary_latency_ms": 159, "backup_fail_rate": 0.024, "backup_latency_ms": 208, "similarity_threshold": 0.89}, {"request_id": "req_0066", "user_id": "user_5728", "timestamp": 1782879010.9904478, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 17.9, "primary_fail_rate": 0.166, "primary_latency_ms": 180, "backup_fail_rate": 0.025, "backup_latency_ms": 235, "similarity_threshold": 0.9}, {"request_id": "req_0067", "user_id": "user_6280", "timestamp": 1782879010.9915316, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 131.3, "primary_fail_rate": 0.168, "primary_latency_ms": 162, "backup_fail_rate": 0.052, "backup_latency_ms": 182, "similarity_threshold": 0.86}, {"request_id": "req_0068", "user_id": "user_1659", "timestamp": 1782879010.992407, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 299.9, "primary_fail_rate": 0.192, "primary_latency_ms": 235, "backup_fail_rate": 0.048, "backup_latency_ms": 257, "similarity_threshold": 0.88}, {"request_id": "req_0069", "user_id": "user_6700", "timestamp": 1782879010.9932833, "query_id": "q6", "query": "What is the password reset process for user 456?", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 198.4, "estimated_cost": 0.000414, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 190.4, "primary_fail_rate": 0.234, "primary_latency_ms": 143, "backup_fail_rate": 0.022, "backup_latency_ms": 172, "similarity_threshold": 0.88}, {"request_id": "req_0070", "user_id": "user_1601", "timestamp": 1782879011.191875, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 198.8, "primary_fail_rate": 0.208, "primary_latency_ms": 152, "backup_fail_rate": 0.028, "backup_latency_ms": 175, "similarity_threshold": 0.86}, {"request_id": "req_0071", "user_id": "user_4073", "timestamp": 1782879011.1943989, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 197.3, "primary_fail_rate": 0.161, "primary_latency_ms": 177, "backup_fail_rate": 0.045, "backup_latency_ms": 234, "similarity_threshold": 0.87}, {"request_id": "req_0072", "user_id": "user_8941", "timestamp": 1782879011.1983237, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "api", "think_time_ms": 164.8, "primary_fail_rate": 0.213, "primary_latency_ms": 179, "backup_fail_rate": 0.045, "backup_latency_ms": 183, "similarity_threshold": 0.91}, {"request_id": "req_0073", "user_id": "user_2858", "timestamp": 1782879011.2091904, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 153.57, "estimated_cost": 0.000495, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 165.7, "primary_fail_rate": 0.15, "primary_latency_ms": 145, "backup_fail_rate": 0.043, "backup_latency_ms": 186, "similarity_threshold": 0.94}, {"request_id": "req_0074", "user_id": "user_8483", "timestamp": 1782879011.3629844, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "api", "think_time_ms": 124.6, "primary_fail_rate": 0.326, "primary_latency_ms": 168, "backup_fail_rate": 0.051, "backup_latency_ms": 208, "similarity_threshold": 0.87}, {"request_id": "req_0075", "user_id": "user_9318", "timestamp": 1782879011.3639326, "query_id": "q18", "query": "Explain how half-open state prevents retry storms.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 82.9, "primary_fail_rate": 0.172, "primary_latency_ms": 191, "backup_fail_rate": 0.044, "backup_latency_ms": 254, "similarity_threshold": 0.9}, {"request_id": "req_0076", "user_id": "user_9903", "timestamp": 1782879011.3646965, "query_id": "q9", "query": "Show credit card details for account 7890.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 188.99, "estimated_cost": 0.000675, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 134.0, "primary_fail_rate": 0.302, "primary_latency_ms": 173, "backup_fail_rate": 0.038, "backup_latency_ms": 242, "similarity_threshold": 0.87}, {"request_id": "req_0077", "user_id": "user_8749", "timestamp": 1782879011.5540545, "query_id": "q13", "query": "Describe the social security number validation process.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 205.77, "estimated_cost": 0.000414, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 70.1, "primary_fail_rate": 0.231, "primary_latency_ms": 170, "backup_fail_rate": 0.042, "backup_latency_ms": 236, "similarity_threshold": 0.89}, {"request_id": "req_0078", "user_id": "user_2644", "timestamp": 1782879011.7603812, "query_id": "q13", "query": "Describe the social security number validation process.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 189.94, "estimated_cost": 0.000193, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "web", "think_time_ms": 37.9, "primary_fail_rate": 0.218, "primary_latency_ms": 152, "backup_fail_rate": 0.053, "backup_latency_ms": 178, "similarity_threshold": 0.91}, {"request_id": "req_0079", "user_id": "user_7512", "timestamp": 1782879012.1516452, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 140.8, "primary_fail_rate": 0.163, "primary_latency_ms": 181, "backup_fail_rate": 0.021, "backup_latency_ms": 218, "similarity_threshold": 0.91}, {"request_id": "req_0080", "user_id": "user_5708", "timestamp": 1782879012.1537397, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "cli", "think_time_ms": 261.7, "primary_fail_rate": 0.308, "primary_latency_ms": 209, "backup_fail_rate": 0.03, "backup_latency_ms": 178, "similarity_threshold": 0.9}, {"request_id": "req_0081", "user_id": "user_6314", "timestamp": 1782879012.1542718, "query_id": "q8", "query": "Summarize the refund policy for a student who missed the 2026 deadline.", "query_risk": "policy_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "cli", "think_time_ms": 49.9, "primary_fail_rate": 0.287, "primary_latency_ms": 166, "backup_fail_rate": 0.04, "backup_latency_ms": 225, "similarity_threshold": 0.89}, {"request_id": "req_0082", "user_id": "user_4945", "timestamp": 1782879012.1548178, "query_id": "q2", "query": "What should I do when API calls return 429?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "mobile", "think_time_ms": 51.0, "primary_fail_rate": 0.2, "primary_latency_ms": 167, "backup_fail_rate": 0.036, "backup_latency_ms": 231, "similarity_threshold": 0.93}, {"request_id": "req_0083", "user_id": "user_9955", "timestamp": 1782879012.1552613, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 269.7, "primary_fail_rate": 0.319, "primary_latency_ms": 196, "backup_fail_rate": 0.025, "backup_latency_ms": 244, "similarity_threshold": 0.87}, {"request_id": "req_0084", "user_id": "user_8916", "timestamp": 1782879012.15564, "query_id": "q6", "query": "What is the password reset process for user 456?", "query_risk": "privacy", "route": "static_fallback", "provider": null, "cache_hit": false, "latency_ms": 0.0, "estimated_cost": 0.0, "error": "backup simulated failure", "success": false, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 137.1, "primary_fail_rate": 0.158, "primary_latency_ms": 252, "backup_fail_rate": 0.027, "backup_latency_ms": 194, "similarity_threshold": 0.87}, {"request_id": "req_0085", "user_id": "user_1803", "timestamp": 1782879012.674963, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 233.65, "estimated_cost": 0.000344, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "web", "think_time_ms": 293.4, "primary_fail_rate": 0.19, "primary_latency_ms": 146, "backup_fail_rate": 0.054, "backup_latency_ms": 205, "similarity_threshold": 0.88}, {"request_id": "req_0086", "user_id": "user_3240", "timestamp": 1782879013.061432, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "api", "think_time_ms": 65.7, "primary_fail_rate": 0.287, "primary_latency_ms": 206, "backup_fail_rate": 0.045, "backup_latency_ms": 171, "similarity_threshold": 0.9}, {"request_id": "req_0087", "user_id": "user_7807", "timestamp": 1782879013.0625582, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 249.19, "estimated_cost": 0.000249, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 219.7, "primary_fail_rate": 0.317, "primary_latency_ms": 164, "backup_fail_rate": 0.032, "backup_latency_ms": 202, "similarity_threshold": 0.9}, {"request_id": "req_0088", "user_id": "user_8894", "timestamp": 1782879013.3119726, "query_id": "q6", "query": "What is the password reset process for user 456?", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 211.87, "estimated_cost": 0.000228, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 249.1, "primary_fail_rate": 0.183, "primary_latency_ms": 190, "backup_fail_rate": 0.029, "backup_latency_ms": 168, "similarity_threshold": 0.89}, {"request_id": "req_0089", "user_id": "user_6992", "timestamp": 1782879013.5241675, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "mobile", "think_time_ms": 258.0, "primary_fail_rate": 0.287, "primary_latency_ms": 171, "backup_fail_rate": 0.053, "backup_latency_ms": 232, "similarity_threshold": 0.88}, {"request_id": "req_0090", "user_id": "user_4830", "timestamp": 1782879013.5279932, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "cli", "think_time_ms": 246.7, "primary_fail_rate": 0.296, "primary_latency_ms": 210, "backup_fail_rate": 0.033, "backup_latency_ms": 223, "similarity_threshold": 0.9}, {"request_id": "req_0091", "user_id": "user_7689", "timestamp": 1782879013.5293381, "query_id": "q16", "query": "What is the tuition fee for the 2024 academic year?", "query_risk": "faq_dated", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "us-east-1", "device_type": "web", "think_time_ms": 190.6, "primary_fail_rate": 0.149, "primary_latency_ms": 203, "backup_fail_rate": 0.051, "backup_latency_ms": 198, "similarity_threshold": 0.86}, {"request_id": "req_0092", "user_id": "user_9850", "timestamp": 1782879013.5375547, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 220.23, "estimated_cost": 0.000357, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "mobile", "think_time_ms": 266.2, "primary_fail_rate": 0.171, "primary_latency_ms": 199, "backup_fail_rate": 0.034, "backup_latency_ms": 213, "similarity_threshold": 0.9}, {"request_id": "req_0093", "user_id": "user_4559", "timestamp": 1782879013.758044, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "cli", "think_time_ms": 281.7, "primary_fail_rate": 0.257, "primary_latency_ms": 169, "backup_fail_rate": 0.041, "backup_latency_ms": 166, "similarity_threshold": 0.88}, {"request_id": "req_0094", "user_id": "user_8450", "timestamp": 1782879013.7627797, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "api", "think_time_ms": 18.2, "primary_fail_rate": 0.229, "primary_latency_ms": 180, "backup_fail_rate": 0.053, "backup_latency_ms": 246, "similarity_threshold": 0.88}, {"request_id": "req_0095", "user_id": "user_4394", "timestamp": 1782879013.7737749, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 296.6, "primary_fail_rate": 0.271, "primary_latency_ms": 155, "backup_fail_rate": 0.016, "backup_latency_ms": 193, "similarity_threshold": 0.89}, {"request_id": "req_0096", "user_id": "user_9850", "timestamp": 1782879013.7773285, "query_id": "q19", "query": "What is the SSN for employee 1234?", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 205.95, "estimated_cost": 0.000206, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 83.2, "primary_fail_rate": 0.185, "primary_latency_ms": 194, "backup_fail_rate": 0.021, "backup_latency_ms": 203, "similarity_threshold": 0.95}, {"request_id": "req_0097", "user_id": "user_3076", "timestamp": 1782879013.991311, "query_id": "q9", "query": "Show credit card details for account 7890.", "query_risk": "privacy", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 278.63, "estimated_cost": 0.000193, "error": null, "success": true, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 176.7, "primary_fail_rate": 0.297, "primary_latency_ms": 219, "backup_fail_rate": 0.02, "backup_latency_ms": 254, "similarity_threshold": 0.91}, {"request_id": "req_0098", "user_id": "user_9543", "timestamp": 1782879014.2702372, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 135.6, "primary_fail_rate": 0.245, "primary_latency_ms": 177, "backup_fail_rate": 0.045, "backup_latency_ms": 190, "similarity_threshold": 0.89}, {"request_id": "req_0099", "user_id": "user_2204", "timestamp": 1782879014.2707636, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "cli", "think_time_ms": 205.8, "primary_fail_rate": 0.232, "primary_latency_ms": 187, "backup_fail_rate": 0.034, "backup_latency_ms": 218, "similarity_threshold": 0.85}, {"request_id": "req_0100", "user_id": "user_9282", "timestamp": 1782879014.2713134, "query_id": "q3", "query": "Explain circuit breaker states in one paragraph.", "query_risk": "technical", "route": "cache_hit:1.00", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 114.3, "primary_fail_rate": 0.206, "primary_latency_ms": 186, "backup_fail_rate": 0.039, "backup_latency_ms": 232, "similarity_threshold": 0.88}];
+
+    const RANDOM_STATS = {"primary_fail_rate": {"min": 0.145, "max": 0.333, "avg": 0.23488}, "primary_latency_ms": {"min": 117.0, "max": 266.0, "avg": 179.95}, "backup_fail_rate": {"min": 0.015, "max": 0.054, "avg": 0.0344}, "backup_latency_ms": {"min": 166.0, "max": 276.0, "avg": 216.5}, "similarity_threshold": {"min": 0.84, "max": 0.95, "avg": 0.889}, "think_time_ms": {"min": 7.4, "max": 299.9, "avg": 156.083}, "regions": {"sa-east-1": 27, "ap-northeast-1": 23, "ap-southeast-1": 10, "eu-west-1": 22, "us-east-1": 18}, "devices": {"web": 24, "mobile": 26, "cli": 23, "api": 27}, "query_ids": {"q4": 9, "q17": 5, "q14": 11, "q15": 10, "q10": 5, "q20": 8, "q2": 4, "q5": 3, "q8": 7, "q18": 3, "q11": 6, "q1": 2, "q12": 1, "q6": 5, "q7": 1, "q3": 6, "q16": 6, "q13": 3, "q19": 2, "q9": 3}, "unique_users": 99, "sample": [{"request_id": "req_0001", "user_id": "user_4811", "timestamp": 1782879004.7629318, "query_id": "q4", "query": "Give me the current account balance for user 123.", "query_risk": "privacy", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 202.9, "estimated_cost": 0.000459, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "web", "think_time_ms": 177.1, "primary_fail_rate": 0.149, "primary_latency_ms": 175, "backup_fail_rate": 0.044, "backup_latency_ms": 239, "similarity_threshold": 0.9}, {"request_id": "req_0002", "user_id": "user_3615", "timestamp": 1782879004.9663684, "query_id": "q17", "query": "What is the tuition fee for the 2025 academic year?", "query_risk": "faq_dated", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 179.8, "estimated_cost": 0.000504, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "mobile", "think_time_ms": 134.8, "primary_fail_rate": 0.26, "primary_latency_ms": 138, "backup_fail_rate": 0.042, "backup_latency_ms": 205, "similarity_threshold": 0.88}, {"request_id": "req_0003", "user_id": "user_1711", "timestamp": 1782879005.1471782, "query_id": "q14", "query": "Compare latency between primary and backup providers.", "query_risk": "technical", "route": "fallback", "provider": "backup", "cache_hit": false, "latency_ms": 305.37, "estimated_cost": 0.000292, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-southeast-1", "device_type": "cli", "think_time_ms": 29.0, "primary_fail_rate": 0.209, "primary_latency_ms": 215, "backup_fail_rate": 0.028, "backup_latency_ms": 276, "similarity_threshold": 0.91}, {"request_id": "req_0004", "user_id": "user_4733", "timestamp": 1782879005.6816669, "query_id": "q15", "query": "Summarize the admission FAQ in 3 bullets.", "query_risk": "faq", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 218.03, "estimated_cost": 0.000621, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 173.2, "primary_fail_rate": 0.247, "primary_latency_ms": 203, "backup_fail_rate": 0.037, "backup_latency_ms": 216, "similarity_threshold": 0.89}, {"request_id": "req_0005", "user_id": "user_2169", "timestamp": 1782879005.9001343, "query_id": "q10", "query": "Explain the difference between retry and circuit breaker patterns.", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 217.73, "estimated_cost": 0.000621, "error": null, "success": true, "cache_enabled": true, "client_region": "ap-northeast-1", "device_type": "api", "think_time_ms": 48.8, "primary_fail_rate": 0.333, "primary_latency_ms": 210, "backup_fail_rate": 0.03, "backup_latency_ms": 179, "similarity_threshold": 0.87}, {"request_id": "req_0006", "user_id": "user_4752", "timestamp": 1782879006.1186104, "query_id": "q20", "query": "How does Redis EXPIRE handle key eviction under memory pressure?", "query_risk": "technical", "route": "static_fallback", "provider": null, "cache_hit": false, "latency_ms": 0.0, "estimated_cost": 0.0, "error": "backup simulated failure", "success": false, "cache_enabled": true, "client_region": "eu-west-1", "device_type": "mobile", "think_time_ms": 205.4, "primary_fail_rate": 0.266, "primary_latency_ms": 158, "backup_fail_rate": 0.033, "backup_latency_ms": 216, "similarity_threshold": 0.91}, {"request_id": "req_0007", "user_id": "user_8517", "timestamp": 1782879006.5218475, "query_id": "q2", "query": "What should I do when API calls return 429?", "query_risk": "technical", "route": "primary", "provider": "primary", "cache_hit": false, "latency_ms": 190.54, "estimated_cost": 0.00054, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "api", "think_time_ms": 63.8, "primary_fail_rate": 0.299, "primary_latency_ms": 169, "backup_fail_rate": 0.051, "backup_latency_ms": 226, "similarity_threshold": 0.85}, {"request_id": "req_0008", "user_id": "user_3266", "timestamp": 1782879006.7128158, "query_id": "q5", "query": "Summarize the admission FAQ in 5 bullets.", "query_risk": "faq", "route": "cache_hit:0.97", "provider": null, "cache_hit": true, "latency_ms": 0.0, "estimated_cost": 0.0, "error": null, "success": true, "cache_enabled": true, "client_region": "sa-east-1", "device_type": "cli", "think_time_ms": 269.3, "primary_fail_rate": 0.195, "primary_latency_ms": 178, "backup_fail_rate": 0.025, "backup_latency_ms": 255, "similarity_threshold": 0.88}]};
+    const CACHE_COMPARE = {"without_cache": {"total_requests": 100, "availability": 0.96, "error_rate": 0.04, "latency_p50_ms": 226.81, "latency_p95_ms": 299.92, "latency_p99_ms": 338.79, "cache_hit_rate": 0.0, "estimated_cost": 0.044958, "estimated_cost_saved": 0.0, "circuit_open_count": 0, "fallback_success_rate": 0.8667}, "with_cache": {"total_requests": 100, "availability": 0.98, "error_rate": 0.02, "latency_p50_ms": 217.88, "latency_p95_ms": 279.59, "latency_p99_ms": 297.45, "cache_hit_rate": 0.64, "estimated_cost": 0.014808, "estimated_cost_saved": 0.064, "circuit_open_count": 1, "fallback_success_rate": 0.8333}, "delta": {"latency_p50_ms": "-8.93", "latency_p95_ms": "-20.33", "latency_p99_ms": "-41.34", "estimated_cost": "-0.030150", "cache_hit_rate": "+64.0%", "availability": "+2.0%"}, "note": "Same request sequence (seed fixed); cache OFF run first, then cache ON."};
+
+    // Stat cards — include random spread
+    const cards = [
+      ['Availability', (METRICS.availability*100).toFixed(1)+'%', 'var(--accent2)'],
+      ['Cache Hit', (METRICS.cache_hit_rate*100).toFixed(1)+'%', 'var(--purple)'],
+      ['P95 Latency', METRICS.latency_p95_ms+'ms', 'var(--accent)'],
+      ['Cost Saved', '$'+METRICS.estimated_cost_saved, 'var(--warn)'],
+    ];
+    if (RANDOM_STATS.primary_fail_rate) {
+      cards.push(
+        ['Fail rate range', (RANDOM_STATS.primary_fail_rate.min*100).toFixed(0)+'–'+(RANDOM_STATS.primary_fail_rate.max*100).toFixed(0)+'%', 'var(--warn)'],
+        ['Latency cfg range', RANDOM_STATS.primary_latency_ms.min+'–'+RANDOM_STATS.primary_latency_ms.max+'ms', 'var(--purple)'],
+      );
+    }
+    document.getElementById('stat-cards').innerHTML = cards.map(([l,v,c]) =>
+      `<div class="stat-card"><div class="val" style="color:${c}">${v}</div><div class="lbl">${l}</div></div>`
+    ).join('');
+
+    function routeClass(route) {
+      if (route.startsWith('cache')) return 'route-cache';
+      if (route === 'primary') return 'route-primary';
+      if (route === 'fallback') return 'route-fallback';
+      if (route === 'static_fallback') return 'route-static';
+      return '';
+    }
+
+    function configSummary(r) {
+      if (r.primary_fail_rate === undefined) return '-';
+      return `P:${(r.primary_fail_rate*100).toFixed(0)}%/${r.primary_latency_ms}ms B:${(r.backup_fail_rate*100).toFixed(0)}%/${r.backup_latency_ms}ms`;
+    }
+
+    function showDetail(r) {
+      const el = document.getElementById('request-detail');
+      if (!r.primary_fail_rate) { el.style.display='none'; return; }
+      el.style.display='block';
+      el.innerHTML = `<strong>${r.request_id}</strong> — ${r.user_id} (${r.device_type}, ${r.client_region})<br>
+        Query: <code>${r.query}</code><br>
+        <table style="margin-top:0.5rem;font-size:0.85rem">
+          <tr><td>primary fail_rate</td><td>${(r.primary_fail_rate*100).toFixed(1)}%</td><td>primary latency cfg</td><td>${r.primary_latency_ms} ms</td></tr>
+          <tr><td>backup fail_rate</td><td>${(r.backup_fail_rate*100).toFixed(1)}%</td><td>backup latency cfg</td><td>${r.backup_latency_ms} ms</td></tr>
+          <tr><td>similarity_threshold</td><td>${r.similarity_threshold}</td><td>think_time</td><td>${r.think_time_ms} ms</td></tr>
+          <tr><td>route</td><td>${r.route}</td><td>actual latency</td><td>${r.latency_ms} ms</td></tr>
+          <tr><td>cost</td><td>$${r.estimated_cost}</td><td>error</td><td>${r.error||'-'}</td></tr>
+        </table>`;
+    }
+
+    function renderTable(filter) {
+      const tbody = document.getElementById('request-tbody');
+      const filtered = REQUESTS.filter(r => {
+        if (filter === 'all') return true;
+        if (filter === 'primary') return r.route === 'primary';
+        if (filter === 'fallback') return r.route === 'fallback';
+        if (filter === 'cache') return r.cache_hit;
+        if (filter === 'privacy') return r.query_risk === 'privacy';
+        if (filter === 'error') return !r.success;
+        if (filter === 'high-fail') return (r.primary_fail_rate||0) > 0.30;
+        return true;
+      });
+      tbody.innerHTML = filtered.map(r => `<tr data-id="${r.request_id}" style="cursor:pointer">
+        <td>${r.request_id}</td>
+        <td>${r.user_id}</td>
+        <td>${r.client_region||'-'}</td>
+        <td title="${r.query}">${r.query.substring(0,40)}${r.query.length>40?'...':''}</td>
+        <td>${r.query_risk||'-'}</td>
+        <td style="font-family:var(--mono);font-size:0.75rem">${configSummary(r)}</td>
+        <td><span class="route-badge ${routeClass(r.route)}">${r.route}</span></td>
+        <td>${r.latency_ms}ms</td>
+        <td>${r.success ? '✓' : '✗ '+(r.error||'fail')}</td>
+      </tr>`).join('');
+      tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const r = REQUESTS.find(x => x.request_id === tr.dataset.id);
+          if (r) showDetail(r);
+        });
+      });
+    }
+
+    document.getElementById('filter-bar').addEventListener('click', e => {
+      if (e.target.tagName !== 'BUTTON') return;
+      document.querySelectorAll('#filter-bar button').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      renderTable(e.target.dataset.filter);
+    });
+    renderTable('all');
+
+    // Charts
+    Chart.defaults.color = '#8b9cb3';
+    Chart.defaults.borderColor = '#2d3a4f';
+
+    const routeLabels = Object.keys(SUMMARY.route_distribution);
+    const routeData = Object.values(SUMMARY.route_distribution);
+    new Chart(document.getElementById('chartRoutes'), {
+      type: 'doughnut',
+      data: {
+        labels: routeLabels,
+        datasets: [{ data: routeData, backgroundColor: ['#3fb950','#58a6ff','#bc8cff','#d29922','#f85149'] }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const latencies = REQUESTS.filter(r => r.latency_ms > 0).map(r => r.latency_ms);
+    const buckets = {'<200':0,'200-250':0,'250-300':0,'>300':0};
+    latencies.forEach(l => {
+      if (l < 200) buckets['<200']++;
+      else if (l < 250) buckets['200-250']++;
+      else if (l < 300) buckets['250-300']++;
+      else buckets['>300']++;
+    });
+    new Chart(document.getElementById('chartLatency'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(buckets),
+        datasets: [{ label: 'Requests', data: Object.values(buckets), backgroundColor: '#58a6ff' }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    const riskCounts = {};
+    REQUESTS.forEach(r => { riskCounts[r.query_risk||'unknown'] = (riskCounts[r.query_risk||'unknown']||0)+1; });
+    new Chart(document.getElementById('chartRisk'), {
+      type: 'pie',
+      data: {
+        labels: Object.keys(riskCounts),
+        datasets: [{ data: Object.values(riskCounts), backgroundColor: ['#f85149','#58a6ff','#3fb950','#d29922','#bc8cff','#8b9cb3'] }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const provCounts = {};
+    REQUESTS.forEach(r => {
+      const p = r.provider || (r.cache_hit ? 'cache' : 'none');
+      provCounts[p] = (provCounts[p]||0)+1;
+    });
+
+    const regionDist = SUMMARY.region_distribution || {};
+    new Chart(document.getElementById('chartRegion'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(regionDist),
+        datasets: [{ label: 'Requests', data: Object.values(regionDist), backgroundColor: '#58a6ff' }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    const failRates = REQUESTS.filter(r => r.primary_fail_rate).map(r => r.primary_fail_rate);
+    const failBuckets = {'<15%':0,'15-25%':0,'25-35%':0,'>35%':0};
+    failRates.forEach(f => {
+      if (f < 0.15) failBuckets['<15%']++;
+      else if (f < 0.25) failBuckets['15-25%']++;
+      else if (f < 0.35) failBuckets['25-35%']++;
+      else failBuckets['>35%']++;
+    });
+    new Chart(document.getElementById('chartFailRate'), {
+      type: 'bar',
+      data: {
+        labels: Object.keys(failBuckets),
+        datasets: [{ label: 'Requests', data: Object.values(failBuckets), backgroundColor: '#d29922' }]
+      },
+      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+
+    const deviceDist = RANDOM_STATS.devices || {};
+    new Chart(document.getElementById('chartDevice'), {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(deviceDist),
+        datasets: [{ data: Object.values(deviceDist), backgroundColor: ['#3fb950','#58a6ff','#bc8cff','#d29922'] }]
+      },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const scatterData = REQUESTS.filter(r => r.latency_ms > 0 && r.primary_latency_ms).slice(0, 50);
+    const cfgLatEl = document.getElementById('chartCfgVsActual');
+    if (cfgLatEl) new Chart(cfgLatEl, {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'cfg vs actual latency',
+          data: scatterData.map(r => ({ x: r.primary_latency_ms, y: r.latency_ms })),
+          backgroundColor: '#bc8cff'
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: 'Cfg latency (ms)' } },
+          y: { title: { display: true, text: 'Actual latency (ms)' } }
+        }
+      }
+    });
+
+    if (CACHE_COMPARE.without_cache) {
+      const w = CACHE_COMPARE.without_cache;
+      const c = CACHE_COMPARE.with_cache;
+      new Chart(document.getElementById('chartCacheLatency'), {
+        type: 'bar',
+        data: {
+          labels: ['P50', 'P95', 'P99'],
+          datasets: [
+            { label: 'Không cache', data: [w.latency_p50_ms, w.latency_p95_ms, w.latency_p99_ms], backgroundColor: '#f85149' },
+            { label: 'Có cache', data: [c.latency_p50_ms, c.latency_p95_ms, c.latency_p99_ms], backgroundColor: '#3fb950' }
+          ]
+        },
+        options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'ms' } } } }
+      });
+      new Chart(document.getElementById('chartCacheCost'), {
+        type: 'bar',
+        data: {
+          labels: ['Cost ($)', 'Cache hit (%)'],
+          datasets: [
+            { label: 'Không cache', data: [w.estimated_cost, 0], backgroundColor: '#f85149' },
+            { label: 'Có cache', data: [c.estimated_cost, c.cache_hit_rate * 100], backgroundColor: '#3fb950' }
+          ]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+  </script>
+
+<!-- SIMULATION_DASHBOARD_END -->
+
+  <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;">
+    Day 10 Reliability Agent Lab — Tài liệu tạo từ README.md, RUBRIC.md, report_template.md và source code.
+  </footer>
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1a2332',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#2d3a4f',
+      lineColor: '#58a6ff',
+      secondaryColor: '#243044',
+      tertiaryColor: '#0f1419'
+    }
+  });
+
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
